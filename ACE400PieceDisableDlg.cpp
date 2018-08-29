@@ -64,7 +64,18 @@ CACE400PieceDisableDlg::CACE400PieceDisableDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CACE400PieceDisableDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CACE400PieceDisableDlg)
-		// NOTE: the ClassWizard will add member initialization here
+	m_nBlockTot = 0;
+	m_nBlockRow = 0;
+	m_nBlockCol = 0;
+	m_nPieceTot = 0;
+	m_nPieceRow = 0;
+	m_nPieceCol = 0;
+	m_nCellCol = 0;
+	m_nCellRow = 0;
+	m_nCellTot = 0;
+	m_bUsePieceDisable = FALSE;
+	m_nCellDelCol = 0;
+	m_nCellDelRow = 0;
 	//}}AFX_DATA_INIT
 	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -74,7 +85,18 @@ void CACE400PieceDisableDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CACE400PieceDisableDlg)
-		// NOTE: the ClassWizard will add DDX and DDV calls here
+	DDX_Text(pDX, IDC_EDIT_BLOCK_TOT, m_nBlockTot);
+	DDX_Text(pDX, IDC_EDIT_BLOCK_ROW, m_nBlockRow);
+	DDX_Text(pDX, IDC_EDIT_BLOCK_COL, m_nBlockCol);
+	DDX_Text(pDX, IDC_EDIT_PIECE_TOT, m_nPieceTot);
+	DDX_Text(pDX, IDC_EDIT_PIECE_ROW, m_nPieceRow);
+	DDX_Text(pDX, IDC_EDIT_PIECE_COL, m_nPieceCol);
+	DDX_Text(pDX, IDC_EDIT_CELL_COL, m_nCellCol);
+	DDX_Text(pDX, IDC_EDIT_CELL_ROW, m_nCellRow);
+	DDX_Text(pDX, IDC_EDIT_CELL_TOT, m_nCellTot);
+	DDX_Check(pDX, IDC_CHECK1, m_bUsePieceDisable);
+	DDX_Text(pDX, IDC_EDIT_CELL_DEL_COL, m_nCellDelCol);
+	DDX_Text(pDX, IDC_EDIT_CELL_DEL_ROW, m_nCellDelRow);
 	//}}AFX_DATA_MAP
 }
 
@@ -86,6 +108,10 @@ BEGIN_MESSAGE_MAP(CACE400PieceDisableDlg, CDialog)
 	ON_WM_SHOWWINDOW()
 	ON_WM_TIMER()
 	ON_WM_LBUTTONDOWN()
+	ON_BN_CLICKED(IDC_BUTTON_FILE_LOAD, OnButtonFileLoad)
+	ON_BN_CLICKED(IDC_BUTTON_FILE_SAVE, OnButtonFileSave)
+	ON_BN_CLICKED(IDC_BUTTON_FILE_VIEW, OnButtonFileView)
+	ON_BN_CLICKED(IDC_BUTTON_ENABLE_ALL, OnButtonEnableAll)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -146,7 +172,7 @@ void CACE400PieceDisableDlg::OnTimer(UINT nIDEvent)
 		//CString strTemp;
 		//AfxMessageBox(strTemp, MB_ICONINFORMATION);
 
-		for(int cell = 1; cell <= nCellMax; cell++) //test  display
+		for(int cell = 1; cell <= m_nCellTot; cell++) //test  display
 		{  
 			GraphDisplayBlock(cell);//display-no1			 
 		}
@@ -232,74 +258,6 @@ void CACE400PieceDisableDlg::OnShowWindow(BOOL bShow, UINT nStatus)
 int CACE400PieceDisableDlg::InitMember() 
 {
 
-	int nLine1, nLine2;
-
-	FileSysInfo01.LoadSaveView01(DATA_LOAD);		// Load	SysInfoView01.m_pStrFileBDLName
-	FileSysInfo01.LoadSaveSub13(DATA_LOAD);			// Load Block.ini
-    FileSysInfo01.LoadSaveSub25(DATA_LOAD); 		// Load Piece.ini	
-	FileSysInfo01.LoadSaveSub19(DATA_LOAD,1);		// 기존  BlockDis.ini fmf Load (기존 data를 활용해서 새 BlockDis.ini를 만들어야
-
- 	
-	nDisPMaxX=545;   
-	nDisPMaxY=510;   
-
-	nLine1=0;   
-	nLine2=nLine1/2;  //nLine1  +시 축소 / - 100 확대 됨??????
-
-   
-	nBlockMaxX = SysInfo03.m_nCol;		
-	nBlockMaxY = SysInfo03.m_nRow; 
-	nPieceMaxX = SysInfo25.m_nCol; 
-	nPieceMaxY = SysInfo25.m_nRow;  
-	nCellMaxX  = nBlockMaxX * nPieceMaxX - SysInfo25.m_nColDel; 
-	nCellMaxY  = nBlockMaxY * nPieceMaxY - SysInfo25.m_nRowDel; 
-	nCellMax   = nCellMaxX * nCellMaxY;
-
- 
-    nBlockMax = nBlockMaxX * nBlockMaxY; 
-    nPieceMax = nPieceMaxX * nPieceMaxY;
-	
-	if(nCellMaxX>0){
-		nCellXGap=nDisPMaxX/nCellMaxX;
-	}else{
-		nCellXGap=1;
-	}
-	if(nCellMaxY>0){
-		nCellYGap=nDisPMaxY/nCellMaxY;
-	}else{
-		nCellYGap=1;
-	}	
-	
-
-	// m_Block 정보를 생성
-	int k;
-	for(int i=1; i<= nCellMaxY ; i++)
-	{    
- 	   for( int j=1; j<= nCellMaxX ; j++) //sylee20120321   nBlockMaxY-> nCellMaxY
- 	   {  
-			if( i==1 && j==1 )		// 최초 설정
-			{
-				 m_Block[1].left   = 0  ;
-				 m_Block[1].right  = nCellXGap - nLine2 ;
-				 m_Block[1].top    = 0 ;  //k max 200
-			 	 m_Block[1].bottom = nCellYGap - nLine2 ;
-			}
-			else
-			{  //k max 200
-				 k=(int)(nCellMaxX*(i-1)+j);
-				 m_Block[k].left=   m_Block[1].left + (m_Block[1].right*(j-1)) ;
-				 m_Block[k].right=  m_Block[k].left +  m_Block[1].right ;
-			 	 m_Block[k].top= (long)( m_Block[1].top  + (m_Block[1].bottom*(i-1))) ;  
-			 	 m_Block[k].bottom= m_Block[k].top  +  m_Block[1].bottom ;
-			}
-		}
-	}
-
-
-
-	// 화면에 그려지는 모양 데이터를 설정
-	DisplayNo();
-
 	return TRUE;
 }
 
@@ -309,22 +267,97 @@ int CACE400PieceDisableDlg::InitView()
 	UpdateData(TRUE);
 
 
+	int nLine1, nLine2;
+
+	FileSysInfo01.LoadSaveView01(DATA_LOAD);		// Load	SysInfoView01.m_pStrFileBDLName
+	FileSysInfo01.LoadSaveSub13(DATA_LOAD);			// Load Block.ini
+    FileSysInfo01.LoadSaveSub25(DATA_LOAD); 		// Load Piece.ini	
+	FileSysInfo01.LoadSaveSub19(DATA_LOAD,1);		// 기존  BlockDis.ini 를 Load (기존 data를 활용해서 새 BlockDis.ini를 만들어야)
+
+ 	
+	m_nDisPMaxX=545;   
+	m_nDisPMaxY=510;   
+
+	nLine1=0;   
+	nLine2=nLine1/2;  //nLine1  +시 축소 / - 100 확대 됨??????
+
+   
+   	// 화면에 반영되는 value형 control 값
+	m_nBlockCol = SysInfo03.m_nCol;		
+	m_nBlockRow = SysInfo03.m_nRow; 
+	m_nBlockTot = m_nBlockCol * m_nBlockRow;
+
+	m_nPieceCol = SysInfo25.m_nCol; 
+	m_nPieceRow = SysInfo25.m_nRow;  
+	m_nPieceTot = m_nPieceCol * m_nPieceRow;
+
+	m_nCellCol  = m_nBlockCol * m_nPieceCol - SysInfo25.m_nColDel; 
+	m_nCellRow  = m_nBlockRow * m_nPieceRow - SysInfo25.m_nRowDel; 
+	m_nCellTot   = m_nCellCol * m_nCellRow;
+	m_nCellDelCol = SysInfo25.m_nColDel;
+	m_nCellDelRow = SysInfo25.m_nRowDel;
+
+	m_bUsePieceDisable = SysInfo19.m_nUse; 
+	
+ 
+	
+	if(m_nCellCol > 0)
+		m_nCellXGap = m_nDisPMaxX / m_nCellCol;
+	else
+		m_nCellXGap = 1;
+	
+	if(m_nCellRow > 0)
+		m_nCellYGap = m_nDisPMaxY / m_nCellRow;
+	else
+		m_nCellYGap =1;
+		
+	
+
+	// m_saRectCell[] 정보를 생성
+	int k;
+	for(int i=1; i<= m_nCellRow ; i++)
+	{    
+ 	   for( int j=1; j<= m_nCellCol ; j++) // m_nBlockRow-> m_nCellRow
+ 	   {  
+			if( i==1 && j==1 )		// 최초 설정
+			{
+				 m_saRectCell[1].left   = 0  ;
+				 m_saRectCell[1].right  = m_nCellXGap - nLine2 ;
+				 m_saRectCell[1].top    = 0 ;  //k max 200
+			 	 m_saRectCell[1].bottom = m_nCellYGap - nLine2 ;
+			}
+			else
+			{  //k max 200
+				 k=(int)(m_nCellCol*(i-1)+j);
+				 m_saRectCell[k].left=   m_saRectCell[1].left + (m_saRectCell[1].right*(j-1)) ;
+				 m_saRectCell[k].right=  m_saRectCell[k].left +  m_saRectCell[1].right ;
+			 	 m_saRectCell[k].top= (long)( m_saRectCell[1].top  + (m_saRectCell[1].bottom*(i-1))) ;  
+			 	 m_saRectCell[k].bottom= m_saRectCell[k].top  +  m_saRectCell[1].bottom ;
+			}
+		}
+	}
+
+
+
+	// 화면에 그려지는 모양 데이터를 설정
+	DisplayNo();
+
 	UpdateData(FALSE);
 
 	return TRUE;
 }
 
 
-// 화면에 그려지는 모양인 nDisCell1[][][]에 block, piece 번호등의 번호를 설정.
+// 화면에 그려지는 모양인 m_waDisCell[][][]에 block, piece 번호등의 번호를 설정.
 int CACE400PieceDisableDlg::DisplayNo()  
 {	
 
  
 	int posCol,posRow;
 
-	::ZeroMemory(nDisCell1, sizeof(nDisCell1)); 
-//	::ZeroMemory(nDisBlock1,sizeof(nDisBlock1));
-//	::ZeroMemory(nDisPiece1,sizeof(nDisPiece1));
+	::ZeroMemory(m_waDisCell, sizeof(m_waDisCell)); 
+	::ZeroMemory(m_waDisBlock,sizeof(m_waDisBlock));
+	::ZeroMemory(m_waDisPiece,sizeof(m_waDisPiece));
 
   
 
@@ -333,10 +366,10 @@ int CACE400PieceDisableDlg::DisplayNo()
 	posCol=posRow=0;
 
 	int blockRow, blockCol;
-	for(blockRow=1;   blockRow <= SysInfo03.m_nRow;  blockRow++)
+	for(blockRow=1;   blockRow <= m_nBlockRow;  blockRow++)
 	{	
-		for(blockCol=1;   blockCol <= SysInfo03.m_nCol;  blockCol++)
-			nDisBlock1[blockRow][blockCol] = SysInfo03.m_nData[blockRow-1][blockCol-1];
+		for(blockCol=1;   blockCol <= m_nBlockCol;  blockCol++)
+			m_waDisBlock[blockRow][blockCol] = SysInfo03.m_nData[blockRow-1][blockCol-1];
 	}
 
 	//--------------------------------------------------
@@ -345,10 +378,10 @@ int CACE400PieceDisableDlg::DisplayNo()
 
 
 	int pieceRow, pieceCol;
-	for(pieceRow=1;   pieceRow <= SysInfo25.m_nRow;  pieceRow++)
+	for(pieceRow=1;   pieceRow <= m_nPieceRow;  pieceRow++)
 	{	
-		for(pieceCol=1;   pieceCol<=SysInfo25.m_nCol;  pieceCol++)
-			nDisPiece1[pieceRow][pieceCol] = SysInfo25.m_nData[pieceRow-1][pieceCol-1];
+		for(pieceCol=1;   pieceCol<=m_nPieceCol;  pieceCol++)
+			m_waDisPiece[pieceRow][pieceCol] = SysInfo25.m_nData[pieceRow-1][pieceCol-1];
 	}
 
 
@@ -357,19 +390,19 @@ int CACE400PieceDisableDlg::DisplayNo()
 
 	posCol=posRow=0;
 
-	for(blockRow=1;   blockRow<=SysInfo03.m_nRow;  blockRow++)
+	for(blockRow=1;   blockRow<=m_nBlockRow;  blockRow++)
 	{		
-		for(blockCol=1;   blockCol<=SysInfo03.m_nCol;  blockCol++)
+		for(blockCol=1;   blockCol<=m_nBlockCol;  blockCol++)
 		{
-		    for(pieceRow=1;   pieceRow<=SysInfo25.m_nRow;  pieceRow++)
+		    for(pieceRow=1;   pieceRow<=m_nPieceRow;  pieceRow++)
 		    {
-				for(pieceCol=1;  pieceCol<=SysInfo25.m_nCol; pieceCol++)
+				for(pieceCol=1;  pieceCol<=m_nPieceCol; pieceCol++)
 				{
-					posCol = (blockCol-1) * SysInfo25.m_nCol + pieceCol;		// display Col
-					posRow = (blockRow-1) * SysInfo25.m_nRow + pieceRow;		// display Row
+					posCol = (blockCol-1) * m_nPieceCol + pieceCol;		// display Col
+					posRow = (blockRow-1) * m_nPieceRow + pieceRow;		// display Row
 
-					nDisCell1[posRow][posCol][0]=nDisBlock1[blockRow][blockCol];// [1,1],[2,1]		// block No
-					nDisCell1[posRow][posCol][1]=nDisPiece1[pieceRow][pieceCol];// [1,1~3] [2,1~3]	// piece No
+					m_waDisCell[posRow][posCol][0]=m_waDisBlock[blockRow][blockCol];// [1,1],[2,1]		// block No
+					m_waDisCell[posRow][posCol][1]=m_waDisPiece[pieceRow][pieceCol];// [1,1~3] [2,1~3]	// piece No
 				}
 			}
 
@@ -378,19 +411,20 @@ int CACE400PieceDisableDlg::DisplayNo()
 /////////////////////////////////////////////////////////////////
 
 
-	nDisBlock1[0][1]=SysInfo03.m_nRow;
-	nDisBlock1[0][2]=SysInfo03.m_nCol;
-	nDisPiece1[0][1]=SysInfo25.m_nRow;
-	nDisPiece1[0][2]=SysInfo25.m_nCol;
+	m_waDisBlock[0][1]=m_nBlockRow;
+	m_waDisBlock[0][2]=m_nBlockCol;
+	m_waDisPiece[0][1]=m_nPieceRow;
+	m_waDisPiece[0][2]=m_nPieceCol;
 
 
 	return TRUE;   	               
 }
 
+
+
+
 void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
 {
-//	CDC  *pDC;
-//	CWnd* pWnd;
 	CRect AllRect;
  	RECT Rect;
 	CString strMsg;
@@ -398,50 +432,49 @@ void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
 	COLORREF bkColor;
  
  
-// 	if( nProcessFlag1==1){//sylee130216joytech
-//		return;
-//	}
  
- 
-	if( nCell >  nCellMax) 
+	if( nCell >  m_nCellTot) 
 		return; 
 
 	UpdateData(TRUE);
  
-//	pWnd = (CStatic*)GetDlgItem(IDD_PIECEDISABLE_DIALOG);
-//	pDC = pWnd->GetDC();
-	CClientDC dc(this);
+	CDC  *pDC;
+	CWnd* pWnd;
+	pWnd = (CStatic*)GetDlgItem(IDC_STATIC_GRAPH);
+	pDC = pWnd->GetDC();
  
-     if(nCellMaxX<=2 && nCellMaxY<=2){ //sylee140115 
+	//-------------------------------
+	// 폰트 지정
+	
+     if(m_nCellCol<=2 && m_nCellRow<=2){ //sylee140115 
         nFontW=100;nFontS=10;
-	}else if(nCellMaxX<=4 && nCellMaxY<=4){
+	}else if(m_nCellCol<=4 && m_nCellRow<=4){
         nFontW=100;nFontS=20; 
-	}else if(nCellMaxX<=5 && nCellMaxY<=10){
+	}else if(m_nCellCol<=5 && m_nCellRow<=10){
         nFontW=100;nFontS=30; 
-	}else if(nCellMaxX<=8 && nCellMaxY<=15){
+	}else if(m_nCellCol<=8 && m_nCellRow<=15){
         nFontW=100;nFontS=40; 
-	}else if(nCellMaxX<=10 && nCellMaxY<=20){
+	}else if(m_nCellCol<=10 && m_nCellRow<=20){
         nFontW=100;nFontS=50; 
-	}else if(nCellMaxX<=12 && nCellMaxY<=25){
+	}else if(m_nCellCol<=12 && m_nCellRow<=25){
         nFontW=100;nFontS=60; 
-	}else if(nCellMaxX<=14 && nCellMaxY<=30){
+	}else if(m_nCellCol<=14 && m_nCellRow<=30){
         nFontW=100;nFontS=70; 
-	}else if(nCellMaxX<=16 && nCellMaxY<=35){
+	}else if(m_nCellCol<=16 && m_nCellRow<=35){
         nFontW=100;nFontS=80; 
-	}else if(nCellMaxX<=18 && nCellMaxY<=40){
+	}else if(m_nCellCol<=18 && m_nCellRow<=40){
         nFontW=100;nFontS=130;  
-	}else if(nCellMaxX<=25 && nCellMaxY<=45){
+	}else if(m_nCellCol<=25 && m_nCellRow<=45){
         nFontW=100;nFontS=140; 
-	}else if(nCellMaxX<=30 && nCellMaxY<=50){
+	}else if(m_nCellCol<=30 && m_nCellRow<=50){
         nFontW=100;nFontS=150; 
 	}else{
         nFontW=100;nFontS=160; 
 	}
 
  
-//====================================================
 	LOGFONT lf;
-	lf.lfHeight			= MulDiv(9, dc.GetDeviceCaps(LOGPIXELSY), nFontS);
+	lf.lfHeight			= MulDiv(9, pDC->GetDeviceCaps(LOGPIXELSY), nFontS);
 	lf.lfWidth			= 0;
 	lf.lfEscapement		= 0;
 	lf.lfOrientation	= 0; 
@@ -461,29 +494,27 @@ void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
 	CFont* pOldFont = NULL;
  
 	pNewFont->CreateFontIndirect(&lf); 
-	pOldFont = dc.SelectObject(pNewFont);
+	pOldFont = pDC->SelectObject(pNewFont);
   
-// BackGround를 지정한다.
-
-	AllRect.left = m_Block[nCell].left;
-	AllRect.right = m_Block[nCell].right ;
-	AllRect.top = m_Block[nCell].top;
-    AllRect.bottom = m_Block[nCell].bottom; 
-
  
  	//------------------------------------------
  	// Box 컬러 설정 
  	
-	int nBlockMaxXTotal,  nBlockMaxYTotal;
- 	int row, col, block,piece;
+	// BackGround를 지정한다.
+	AllRect.left = m_saRectCell[nCell].left;
+	AllRect.right = m_saRectCell[nCell].right ;
+	AllRect.top = m_saRectCell[nCell].top;
+    AllRect.bottom = m_saRectCell[nCell].bottom; 
 
-	nBlockMaxXTotal = nBlockMaxX * nPieceMaxX - SysInfo25.m_nColDel;  ///*******
-    nBlockMaxYTotal = nBlockMaxY * nPieceMaxY - SysInfo25.m_nRowDel;  ///*******
+ 	int row, col, block,piece;
+	int nBlockMaxXTotal,  nBlockMaxYTotal;
+	nBlockMaxXTotal = m_nBlockCol * m_nPieceCol - SysInfo25.m_nColDel;  ///*******
+    nBlockMaxYTotal = m_nBlockRow * m_nPieceRow - SysInfo25.m_nRowDel;  ///*******
 	row   = ((nCell - 1) / (nBlockMaxXTotal)); // 몫    
 	col   = nCell - (nBlockMaxXTotal * row);   // 나머지
 	row   = row + 1;
-	block = nDisCell1[row][col][0];	
-	piece = nDisCell1[row][col][1];	
+	block = m_waDisCell[row][col][0];	
+	piece = m_waDisCell[row][col][1];	
 
 	if (SysInfo19.m_nData[block][piece] == CELL_DISABLE)
       	//bkColor = RGB(20,240,1120);     // DISABLE???	  
@@ -496,12 +527,12 @@ void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
 	CBrush BackGrBrush;
 
 	BackGrBrush.CreateSolidBrush(bkColor); 
-	CBrush* pOldBrush = dc.SelectObject(&BackGrBrush); 
-	dc.FillRect(AllRect, &BackGrBrush);
-	dc.SelectObject(pOldBrush);
+	CBrush* pOldBrush = pDC->SelectObject(&BackGrBrush); 
+	pDC->FillRect(AllRect, &BackGrBrush);
+	pDC->SelectObject(pOldBrush);
 
 
-	// ---------------------------------
+	//----------------------------------
 	// Box 그리기  
 	
 	Rect.top = AllRect.top;//sylee140115 
@@ -509,54 +540,56 @@ void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
 	Rect.left = AllRect.left;//sylee140115 
  	Rect.right = AllRect.right;//sylee140115   
 
- 	dc.SetBkColor(RGB(255,225,255)); // WHITE
+ 	pDC->SetBkColor(RGB(255,225,255)); // WHITE
 
-	dc.SetBkColor(bkColor); // //sylee140402
-	dc.SetTextColor(RGB(0,0,0));	
+	pDC->SetBkColor(bkColor); 
+	pDC->SetTextColor(RGB(0,0,0));	
  
-	if( (nPieceMaxX>1) || (nPieceMaxY>1) ){  //SYLEE121120
-		 strMsg.Format("%d-%d",    nDisCell1[row][col][0],  nDisCell1[row][col][1]  );//SYLEE120901
-		 if((nDisCell1[row][col][0]>0)&&(nDisCell1[row][col][1]>0)){//sylee121119
-		    	dc.DrawText(strMsg, -1, &Rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER);	//SYLEE140402		 
-		 }
-	}else{
+	if ((m_nPieceCol > 1) || (m_nPieceRow > 1))
+	{  
+		 strMsg.Format("%d-%d",    m_waDisCell[row][col][0],  m_waDisCell[row][col][1]  );//SYLEE120901
+		 if ((m_waDisCell[row][col][0] > 0) && (m_waDisCell[row][col][1] > 0))
+			pDC->DrawText(strMsg, -1, &Rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER);	
+	}
+	else
+	{
 		strMsg.Format("%d", nCell);
-		if(nCell>0){
-		    dc.DrawText(strMsg, -1, &Rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER); //SYLEE140402	
-		}
+		if(nCell > 0)
+		    pDC->DrawText(strMsg, -1, &Rect, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_VCENTER); 
 	}
                     
- 	dc.SetBkColor(RGB(255,255,255));
-  	dc.SelectObject(pOldFont);
+ 	pDC->SetBkColor(RGB(255,255,255));
+  	pDC->SelectObject(pOldFont);
 	delete pNewFont; 
  
+	//----------------------------------
+	// Box Line 그리기  
+	
  	CPen m_penBack;
- 
 	m_penBack.CreatePen (PS_SOLID,0,RGB(0, 0, 0));
-	CPen *pOldPen = dc.SelectObject (&m_penBack);
+	CPen *pOldPen = pDC->SelectObject (&m_penBack);
 
-	dc.MoveTo(AllRect.left,AllRect.top);
-	dc.LineTo(AllRect.right,AllRect.top);
+	pDC->MoveTo(AllRect.left,AllRect.top);
+	pDC->LineTo(AllRect.right,AllRect.top);
 
- 	dc.LineTo(AllRect.right,AllRect.bottom);
-	dc.LineTo(AllRect.left,AllRect.bottom);
-	dc.LineTo(AllRect.left,AllRect.top);
+ 	pDC->LineTo(AllRect.right,AllRect.bottom);
+	pDC->LineTo(AllRect.left,AllRect.bottom);
+	pDC->LineTo(AllRect.left,AllRect.top);
 
-	dc.MoveTo(AllRect.left+1,AllRect.top+1);
-	dc.LineTo(AllRect.right-1,AllRect.top+1);
+	pDC->MoveTo(AllRect.left+1,AllRect.top+1);
+	pDC->LineTo(AllRect.right-1,AllRect.top+1);
 
- 	dc.LineTo(AllRect.right-1,AllRect.bottom-1);
-	dc.LineTo(AllRect.left+1,AllRect.bottom-1);
-	dc.LineTo(AllRect.left+1,AllRect.top+1);
+ 	pDC->LineTo(AllRect.right-1,AllRect.bottom-1);
+	pDC->LineTo(AllRect.left+1,AllRect.bottom-1);
+	pDC->LineTo(AllRect.left+1,AllRect.top+1);
 
 	
-	dc.SelectObject (pOldPen);
+	pDC->SelectObject (pOldPen);
 	m_penBack.DeleteObject();
-//	ReleaseDC(pDC);
+	ReleaseDC(pDC);
  
 	UpdateData(FALSE);
 }
-
 
 
 // Cell 클릭시에 해당 Cell을 Disable하기 위함
@@ -567,4 +600,49 @@ void CACE400PieceDisableDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	//ToggleDisable(point);
 	
 	CDialog::OnLButtonDown(nFlags, point);
+}
+
+void CACE400PieceDisableDlg::OnButtonFileLoad() 
+{
+	// TODO: Add your control notification handler code here
+	InitView();
+	
+}
+
+void CACE400PieceDisableDlg::OnButtonFileSave() 
+{
+	// TODO: Add your control notification handler code here
+	
+	SysInfo19.m_nCellRow = m_nCellRow;
+	SysInfo19.m_nCellCol = m_nCellCol; 
+    SysInfo19.m_nCellTotal = m_nCellTot;
+//	SysInfo19.m_nType = 1;
+    SysInfo19.m_nUse = m_bUsePieceDisable;
+	
+	
+	FileSysInfo01.LoadSaveSub19(DATA_SAVE,1);		// Save BlockDis.ini  
+}
+
+void CACE400PieceDisableDlg::OnButtonFileView() 
+{
+	// TODO: Add your control notification handler code here
+	
+	
+ 	CString strTemp; 
+	strTemp.Format("%s\\SETUP2\\BlockDis.ini", SysInfoView01.m_pStrFilePathBDL);//SYLEE121202
+
+
+	::ShellExecute(NULL, "open", "notepad.EXE", strTemp, "NULL", SW_SHOWNORMAL);
+}
+
+void CACE400PieceDisableDlg::OnButtonEnableAll() 
+{
+	// TODO: Add your control notification handler code here
+	
+	for (int block = 0; block <= m_nBlockTot; block++)
+	{
+		for (int piece = 0; piece <= m_nPieceTot; piece++)
+
+			SysInfo19.m_nData[block][piece] = CELL_ENABLE;
+	}
 }
