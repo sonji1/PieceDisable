@@ -98,8 +98,7 @@ struct CSysInfo19  //SETUP Cell(Block-Piece)
 	int m_nType;		// 무조건 1
 	int m_nUse;			// 이 부분이 0이면 m_nData를 모두 0으로 초기화.
  	
- 						// Disable Data : 0: Enable,  1: Disable
-	short m_nData[301][Def_MaxPiece1];//sylee131227  block, piece//sylee150618 [blockcount][piececount]
+	short m_nData[301][Def_MaxPiece1]; //[BlockCount][Piececount] // Disable Data : 0: Enable,  1: Disable
 
 	int m_nCheck;//sylee131117
 //	short m_nData1[200][200];

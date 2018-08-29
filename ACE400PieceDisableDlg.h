@@ -31,7 +31,18 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CACE400PieceDisableDlg)
 	enum { IDD = IDD_ACE400PIECEDISABLE_DIALOG };
-		// NOTE: the ClassWizard will add data members here
+	int		m_nBlockTot;
+	int		m_nBlockRow;
+	int		m_nBlockCol;
+	int		m_nPieceTot;
+	int		m_nPieceRow;
+	int		m_nPieceCol;
+	int		m_nCellCol;
+	int		m_nCellRow;
+	int		m_nCellTot;
+	BOOL	m_bUsePieceDisable;
+	int		m_nCellDelCol;
+	int		m_nCellDelRow;
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
@@ -53,6 +64,10 @@ protected:
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnTimer(UINT nIDEvent);
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnButtonFileLoad();
+	afx_msg void OnButtonFileSave();
+	afx_msg void OnButtonFileView();
+	afx_msg void OnButtonEnableAll();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -61,17 +76,18 @@ protected:
 public:
 
 	// ¸â¹ö º¯¼ö 
-	CRect 	m_Block[10001];
+	CRect 	m_saRectCell[5001];
 
-	short 	nBlockRes[5001];
-	int 	nDisPMaxX, nDisPMaxY;
-	int 	nBlockMaxX,nBlockMaxY, nBlockXGap, nBlockYGap, nBlockMax ;
-	int 	nPieceMaxX,nPieceMaxY, nPieceXGap, nPieceYGap, nPieceMax ;
-	int 	nCellMaxX,nCellMaxY, nCellXGap, nCellYGap, nCellMax;
+	//short 	nBlockRes[5001];
+	//int 	nPieceXGap, nPieceYGap;
+	//int 	nBlockXGap, nBlockYGap ;
+	
+	int 	m_nDisPMaxX, m_nDisPMaxY;
+	int 	m_nCellXGap, m_nCellYGap;
 
-	short 	nDisCell1[Def_MaxPiece1][Def_MaxPiece1][2];//Y,X, [BLOCK,PIECE]
-	short 	nDisBlock1[Def_MaxPiece1][Def_MaxPiece1] ;//Y,X, => BLOCK
-	short 	nDisPiece1[Def_MaxPiece1][Def_MaxPiece1] ;//Y,X, => BLOCK
+	short 	m_waDisCell[Def_MaxPiece1][Def_MaxPiece1][2];//Y,X, [BLOCK,PIECE]
+	short 	m_waDisBlock[Def_MaxPiece1][Def_MaxPiece1] ;//Y,X, => BLOCK
+	short 	m_waDisPiece[Def_MaxPiece1][Def_MaxPiece1] ;//Y,X, => BLOCK
 
 
 

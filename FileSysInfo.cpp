@@ -332,7 +332,7 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 			SysInfo19.m_nCellCol=SysInfo25.m_nBlock;//piece
 			SysInfo19.m_nCellTotal=SysInfo19.m_nCellRow*SysInfo19.m_nCellCol;
 			SysInfo19.m_nType=1;
-			SysInfo19.m_nUse=0;
+			SysInfo19.m_nUse=1;
 
 			//FileSysInfo01.LoadSaveSub19(1,1); //save//sylee160203
 
