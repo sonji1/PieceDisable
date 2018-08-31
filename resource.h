@@ -32,6 +32,8 @@
 #define IDC_EDIT_CELL_COL               1014
 #define IDC_EDIT_CELL_DEL_ROW           1015
 #define IDC_EDIT_CELL_DEL_COL           1016
+#define IDC_BUTTON_DISABLE              1017
+#define IDC_EDIT_DISABLE_BLOCK          1018
 #define IDC_CHECK1                      1027
 #define IDC_OK                          1038
 #define IDC_LABEL2                      1041
@@ -66,7 +68,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        130
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1009
+#define _APS_NEXT_CONTROL_VALUE         1019
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

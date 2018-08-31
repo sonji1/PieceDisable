@@ -16,9 +16,7 @@ static char THIS_FILE[] = __FILE__;
 
 BEGIN_MESSAGE_MAP(CACE400PieceDisableApp, CWinApp)
 	//{{AFX_MSG_MAP(CACE400PieceDisableApp)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
-	//}}AFX_MSG
+	//}}AFX_MSG_MAP
 	ON_COMMAND(ID_HELP, CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
@@ -72,3 +70,5 @@ BOOL CACE400PieceDisableApp::InitInstance()
 	//  application, rather than start the application's message pump.
 	return FALSE;
 }
+
+

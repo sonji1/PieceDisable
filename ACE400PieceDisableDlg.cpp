@@ -64,18 +64,22 @@ CACE400PieceDisableDlg::CACE400PieceDisableDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CACE400PieceDisableDlg::IDD, pParent)
 {
 	//{{AFX_DATA_INIT(CACE400PieceDisableDlg)
-	m_nBlockTot = 0;
-	m_nBlockRow = 0;
 	m_nBlockCol = 0;
-	m_nPieceTot = 0;
-	m_nPieceRow = 0;
+	m_nBlockRow = 0;
+	m_nBlockTot = 0;
 	m_nPieceCol = 0;
+	m_nPieceRow = 0;
+	m_nPieceTot = 0;
 	m_nCellCol = 0;
 	m_nCellRow = 0;
 	m_nCellTot = 0;
-	m_bUsePieceDisable = FALSE;
 	m_nCellDelCol = 0;
 	m_nCellDelRow = 0;
+	m_bUsePieceDisable = FALSE;
+	m_nDisableBlock = 0;
+	m_bDragMode = FALSE;
+	m_nStartCellRow = -1;
+	m_nStartCellCol = -1;
 	//}}AFX_DATA_INIT
 	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -85,18 +89,20 @@ void CACE400PieceDisableDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CACE400PieceDisableDlg)
-	DDX_Text(pDX, IDC_EDIT_BLOCK_TOT, m_nBlockTot);
-	DDX_Text(pDX, IDC_EDIT_BLOCK_ROW, m_nBlockRow);
 	DDX_Text(pDX, IDC_EDIT_BLOCK_COL, m_nBlockCol);
-	DDX_Text(pDX, IDC_EDIT_PIECE_TOT, m_nPieceTot);
-	DDX_Text(pDX, IDC_EDIT_PIECE_ROW, m_nPieceRow);
+	DDX_Text(pDX, IDC_EDIT_BLOCK_ROW, m_nBlockRow);
+	DDX_Text(pDX, IDC_EDIT_BLOCK_TOT, m_nBlockTot);
 	DDX_Text(pDX, IDC_EDIT_PIECE_COL, m_nPieceCol);
+	DDX_Text(pDX, IDC_EDIT_PIECE_ROW, m_nPieceRow);
+	DDX_Text(pDX, IDC_EDIT_PIECE_TOT, m_nPieceTot);
 	DDX_Text(pDX, IDC_EDIT_CELL_COL, m_nCellCol);
 	DDX_Text(pDX, IDC_EDIT_CELL_ROW, m_nCellRow);
 	DDX_Text(pDX, IDC_EDIT_CELL_TOT, m_nCellTot);
-	DDX_Check(pDX, IDC_CHECK1, m_bUsePieceDisable);
 	DDX_Text(pDX, IDC_EDIT_CELL_DEL_COL, m_nCellDelCol);
 	DDX_Text(pDX, IDC_EDIT_CELL_DEL_ROW, m_nCellDelRow);
+	DDX_Check(pDX, IDC_CHECK1, m_bUsePieceDisable);
+	DDX_Text(pDX, IDC_EDIT_DISABLE_BLOCK, m_nDisableBlock);
+	DDV_MinMaxInt(pDX, m_nDisableBlock, 0, 301);
 	//}}AFX_DATA_MAP
 }
 
@@ -107,11 +113,15 @@ BEGIN_MESSAGE_MAP(CACE400PieceDisableDlg, CDialog)
 	ON_WM_QUERYDRAGICON()
 	ON_WM_SHOWWINDOW()
 	ON_WM_TIMER()
-	ON_WM_LBUTTONDOWN()
 	ON_BN_CLICKED(IDC_BUTTON_FILE_LOAD, OnButtonFileLoad)
 	ON_BN_CLICKED(IDC_BUTTON_FILE_SAVE, OnButtonFileSave)
 	ON_BN_CLICKED(IDC_BUTTON_FILE_VIEW, OnButtonFileView)
 	ON_BN_CLICKED(IDC_BUTTON_ENABLE_ALL, OnButtonEnableAll)
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
+	ON_EN_CHANGE(IDC_EDIT_DISABLE_BLOCK, OnChangeEditDisableBlock)
+	ON_BN_CLICKED(IDC_BUTTON_DISABLE, OnButtonBlockDisable)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -353,10 +363,11 @@ int CACE400PieceDisableDlg::DisplayNo()
  
 	int posCol,posRow;
 
-	::ZeroMemory(m_waDisCell, sizeof(m_waDisCell)); 
+	::ZeroMemory(m_waDisCell, sizeof(m_waDisCell)); 	// 화면에 표시될 cell 정보
 	::ZeroMemory(m_waDisBlock,sizeof(m_waDisBlock));
 	::ZeroMemory(m_waDisPiece,sizeof(m_waDisPiece));
 
+	::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 회색표시할 부분.
   
 
 	//--------------------------------------------------
@@ -629,6 +640,9 @@ void CACE400PieceDisableDlg::OnButtonEnableAll()
 
 			SysInfo19.m_nData[block][piece] = CELL_ENABLE;
 	}
+
+	m_nDisableBlock = 0;	// 다음 설정을 위해 0으로 초기화.
+	UpdateData(FALSE);
 }
 
 
@@ -673,29 +687,86 @@ void CACE400PieceDisableDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 	CPoint	boxPt = screenPt;
 	::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
-	TRACE("point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
+	TRACE("Start point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
 
+	m_bDragMode = TRUE;		// Drag가 시작되었음을 표시
+
+	// Drag 시작된 포인트의 cell을 drag로 표시,  row, col 값은 받아온다.
+	int row, col;		
+	SetDrag(boxPt, row, col);	
+	m_nStartCellRow = row;
+	m_nStartCellCol = col;
 	
-	ToggleDisable(boxPt);
 	
 	CDialog::OnLButtonDown(nFlags, point);
 }
 
-void CACE400PieceDisableDlg::ToggleDisable(CPoint boxPt) 
+// 전달받은 포인트의 cell을 drag로 표시,  row, col 값은 리턴한다.
+void CACE400PieceDisableDlg::SetDrag(CPoint boxPt, int& rnRow, int& rnCol) 
 {
+}
 
-	// boxPt에 맞는 cell을 찾는다.
-	int cell;
-	for(cell = 1; cell <= m_nCellTot; cell++) //test  display
+void CACE400PieceDisableDlg::OnMouseMove(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+	
+	// 마우스를 누른 상태에서 Drag할 때
+	if (m_bDragMode == TRUE)
 	{
-		if (( boxPt.x >= m_saRectCell[cell].left && boxPt.x <= m_saRectCell[cell].right )
-			&& (boxPt.y >= m_saRectCell[cell].top && boxPt.y <= m_saRectCell[cell].bottom))
-			break;
+		// 현재 클릭한 mouse의 포인트값을 출력, 상대좌표로 바꾼 값도 출력
+		HWND hwndBox = ::GetDlgItem(this->m_hWnd, IDC_STATIC_GRAPH);
+		CPoint	screenPt = point;
+		::ClientToScreen(this->m_hWnd, &screenPt);	// 다이얼로그의 point를 윈도우 포인트로
+
+		CPoint	boxPt = screenPt;
+		::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
+
+		int row, col;
+		SetDrag(boxPt, row, col);		// Drag 진행중인 포인트의 cell을 drag로 표시
+
+		// start Cell과 현재 cell이 다른 경우 체크
+		//if
+
+
 
 	}
-	if (cell == (m_nCellTot +1))		// 맞는 cell이 없음.
+	
+	CDialog::OnMouseMove(nFlags, point);
+}
+
+void CACE400PieceDisableDlg::OnLButtonUp(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+	
+	// 현재 클릭한 mouse의 포인트값을 출력, 상대좌표로 바꾼 값도 출력
+	HWND hwndBox = ::GetDlgItem(this->m_hWnd, IDC_STATIC_GRAPH);
+	CPoint	screenPt = point;
+	::ClientToScreen(this->m_hWnd, &screenPt);	// 다이얼로그의 point를 윈도우 포인트로
+
+	CPoint	boxPt = screenPt;
+	::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
+	TRACE("End point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
+
+	int row, col;
+	SetDrag(boxPt, row, col);		// Drag가 끝난 포인트의 cell을 drag로 표시
+
+	ToggleDisable(boxPt);		// Drag 표시된 모든 cell을 찾아서 Disable/Enable을 toggle한다.
+
+	m_bDragMode = FALSE;		// Drag 끝났음을 표시
+	m_nStartCellRow = -1;
+	m_nStartCellCol = -1;
+	
+	CDialog::OnLButtonUp(nFlags, point);
+}
+
+void CACE400PieceDisableDlg::ToggleDisable(CPoint boxPt) 
+{
+	// boxPt에 맞는 cell을 찾는다.
+	int cell;
+	if (FindCellForPoint(boxPt, cell)  == -1)		// 맞는 cell이 없음.
 		return;
 
+	// cell 번호에 맞는 block, piece를 찾는다.
 	int row, col, block, piece;
 	CellToBlockPiece(cell, row, col, block, piece);
 
@@ -706,6 +777,25 @@ void CACE400PieceDisableDlg::ToggleDisable(CPoint boxPt)
 	else
 		SysInfo19.m_nData[block][piece] = CELL_DISABLE;
 
+}
+
+// boxPt에 맞는 cell을 찾는다.
+int CACE400PieceDisableDlg::FindCellForPoint(CPoint boxPt, int& rnCell) 
+{
+	int cell;
+	for(cell = 1; cell <= m_nCellTot; cell++) //test  display
+	{
+		if (( boxPt.x >= m_saRectCell[cell].left && boxPt.x <= m_saRectCell[cell].right )
+			&& (boxPt.y >= m_saRectCell[cell].top && boxPt.y <= m_saRectCell[cell].bottom))
+			break;
+
+	}
+	if (cell == (m_nCellTot +1))		// 맞는 cell이 없음.
+		return -1;
+
+	rnCell = cell;
+
+	return 0;
 }
 
 // nCell을  rnBlock과 rnPiece로 바꾸어서 리턴한다.
@@ -722,3 +812,37 @@ void CACE400PieceDisableDlg::CellToBlockPiece(int nCell, int& rnRow, int&rnCol, 
 	rnPiece = m_waDisCell[rnRow][rnCol][1];	
 
 }
+
+void CACE400PieceDisableDlg::OnChangeEditDisableBlock() 
+{
+	// TODO: If this is a RICHEDIT control, the control will not
+	// send this notification unless you override the CDialog::OnInitDialog()
+	// function and call CRichEditCtrl().SetEventMask()
+	// with the ENM_CHANGE flag ORed into the mask.
+	
+	// TODO: Add your control notification handler code here
+	
+	
+	// DoDataExchange()로 연결된 m_nDisableBlock 값을 화면에서 가져온다.
+	UpdateData(TRUE);		
+
+}
+
+void CACE400PieceDisableDlg::OnButtonBlockDisable() 
+{
+	// TODO: Add your control notification handler code here
+	
+	// DoDataExchange()로 연결된 m_nDisableBlock 값을 화면에서 가져온다.
+	UpdateData(TRUE);
+
+	if (m_nDisableBlock < 1 || m_nDisableBlock > m_nBlockTot)
+		return;
+	
+	// edit 박스로 지정된 m_nDisableBlock 에 해당하는 블록의 모든 piece를 Disable한다.
+	for (int piece = 0; piece <= m_nPieceTot; piece++)
+		SysInfo19.m_nData[m_nDisableBlock][piece] = CELL_DISABLE;
+
+	UpdateData(FALSE);
+
+}
+
