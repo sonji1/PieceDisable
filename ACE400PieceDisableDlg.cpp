@@ -151,8 +151,9 @@ BOOL CACE400PieceDisableDlg::OnInitDialog()
 
 	// TODO: Add extra initialization here
 	
+	// 1초 주기로 Graphic을 그리기 위한 Timer 설정
 	SetTimer ( 	0,			// OnTimer 수행시 받을 Timer Id
-				1000,		// 1000ms 즉, 1sec 주기
+				500,		// 500ms 즉, 0.5sec 주기
 				NULL);		// Timer 수신시 자동수행할 CallBack Function은 NULL로 설정.
 				
 	
@@ -169,12 +170,9 @@ void CACE400PieceDisableDlg::OnTimer(UINT nIDEvent)
 	{
 		//KillTimer(0);		// 1회성으로 쓰기 위해  Timer 받자 마자 해당 Timer Id를 반환한다.
 
-		//CString strTemp;
-		//AfxMessageBox(strTemp, MB_ICONINFORMATION);
-
 		for(int cell = 1; cell <= m_nCellTot; cell++) //test  display
 		{  
-			GraphDisplayBlock(cell);//display-no1			 
+			GraphDisplayBlock(cell); //display-no1			 
 		}
 	
 	}	
@@ -506,22 +504,15 @@ void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
 	AllRect.top = m_saRectCell[nCell].top;
     AllRect.bottom = m_saRectCell[nCell].bottom; 
 
+	// nCell을 block, piece로 바꾼다.
  	int row, col, block,piece;
-	int nBlockMaxXTotal,  nBlockMaxYTotal;
-	nBlockMaxXTotal = m_nBlockCol * m_nPieceCol - SysInfo25.m_nColDel;  ///*******
-    nBlockMaxYTotal = m_nBlockRow * m_nPieceRow - SysInfo25.m_nRowDel;  ///*******
-	row   = ((nCell - 1) / (nBlockMaxXTotal)); // 몫    
-	col   = nCell - (nBlockMaxXTotal * row);   // 나머지
-	row   = row + 1;
-	block = m_waDisCell[row][col][0];	
-	piece = m_waDisCell[row][col][1];	
+	CellToBlockPiece(nCell, row, col, block, piece);		
+
 
 	if (SysInfo19.m_nData[block][piece] == CELL_DISABLE)
-      	//bkColor = RGB(20,240,1120);     // DISABLE???	  
-    	bkColor = RGB(0,110,110);		// DARK GREEN
+    	bkColor = RGB(0,110,110);	// DARK GREEN
 	else
-		//bkColor=RGB(0,0,0);  //BLACK 
-		bkColor=RGB(255,255,255);  // WHITE
+		bkColor=RGB(255,255,255);  	// WHITE
 
 
 	CBrush BackGrBrush;
@@ -592,16 +583,6 @@ void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
 }
 
 
-// Cell 클릭시에 해당 Cell을 Disable하기 위함
-void CACE400PieceDisableDlg::OnLButtonDown(UINT nFlags, CPoint point) 
-{
-	// TODO: Add your message handler code here and/or call default
-	
-	//ToggleDisable(point);
-	
-	CDialog::OnLButtonDown(nFlags, point);
-}
-
 void CACE400PieceDisableDlg::OnButtonFileLoad() 
 {
 	// TODO: Add your control notification handler code here
@@ -612,6 +593,9 @@ void CACE400PieceDisableDlg::OnButtonFileLoad()
 void CACE400PieceDisableDlg::OnButtonFileSave() 
 {
 	// TODO: Add your control notification handler code here
+	//
+	
+	UpdateData(TRUE);		// 현재 화면 컨트롤의 데이터를 가져 온다.
 	
 	SysInfo19.m_nCellRow = m_nCellRow;
 	SysInfo19.m_nCellCol = m_nCellCol; 
@@ -645,4 +629,96 @@ void CACE400PieceDisableDlg::OnButtonEnableAll()
 
 			SysInfo19.m_nData[block][piece] = CELL_ENABLE;
 	}
+}
+
+
+// Cell 클릭시에 해당 Cell을 Disable하기 위함
+void CACE400PieceDisableDlg::OnLButtonDown(UINT nFlags, CPoint point) 
+{
+	// TODO: Add your message handler code here and/or call default
+	
+	CString strTemp;
+/*
+	// 현재 윈도의 rect 값을 얻어온다.
+	RECT rc1;
+	::GetClientRect(this->m_hWnd, &rc1);	// left=0, right=1038, top=0, bottom=801
+	strTemp.Format("GetClientRect(this->m_hWnd): left=%d, right=%d, top=%d, bottom=%d\n", rc1.left, rc1.right, rc1.top, rc1.bottom);
+	TRACE(strTemp);
+	::GetWindowRect(this->m_hWnd, &rc1);	// left=0, right=1038, top=0, bottom=801
+	strTemp.Format("GetWindowRect(this->m_hWnd): left=%d, right=%d, top=%d, bottom=%d\n", rc1.left, rc1.right, rc1.top, rc1.bottom);
+	TRACE(strTemp);
+
+	
+	
+	// IDC_STATIC_GRAPH 내부의  rect 값을 얻어온다.  (left, top은 모두 0)
+	RECT rc2;
+	HWND hwndBox = ::GetDlgItem(this->m_hWnd, IDC_STATIC_GRAPH);
+
+	::GetClientRect(hwndBox, &rc2);		// left=0, right=634, top=0, bottom=538
+	strTemp.Format("GetClientRect(hwndBox:IDC_STATIC_GRAPH) left=%d, right=%d, top=%d, bottom=%d\n", 
+			rc2.left, rc2.right, rc2.top, rc2.bottom);
+	TRACE(strTemp);
+
+	// IDC_STATIC_GRAPH 윈도우화면의   rect 값을 얻어온다.  (left, top은 모두 0)
+	::GetWindowRect(hwndBox, &rc2);    // left=438, right=1482, top=126, bottom=955	
+	strTemp.Format("GetWindowRect(hwndBox:IDC_STATIC_GRAPH) left=%d, right=%d, top=%d, bottom=%d\n", 
+			rc2.left, rc2.right, rc2.top, rc2.bottom);
+	TRACE(strTemp);
+*/
+
+	// 현재 클릭한 mouse의 포인트값을 출력, 상대좌표로 바꾼 값도 출력
+	HWND hwndBox = ::GetDlgItem(this->m_hWnd, IDC_STATIC_GRAPH);
+	CPoint	screenPt = point;
+	::ClientToScreen(this->m_hWnd, &screenPt);	// 다이얼로그의 point를 윈도우 포인트로
+
+	CPoint	boxPt = screenPt;
+	::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
+	TRACE("point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
+
+	
+	ToggleDisable(boxPt);
+	
+	CDialog::OnLButtonDown(nFlags, point);
+}
+
+void CACE400PieceDisableDlg::ToggleDisable(CPoint boxPt) 
+{
+
+	// boxPt에 맞는 cell을 찾는다.
+	int cell;
+	for(cell = 1; cell <= m_nCellTot; cell++) //test  display
+	{
+		if (( boxPt.x >= m_saRectCell[cell].left && boxPt.x <= m_saRectCell[cell].right )
+			&& (boxPt.y >= m_saRectCell[cell].top && boxPt.y <= m_saRectCell[cell].bottom))
+			break;
+
+	}
+	if (cell == (m_nCellTot +1))		// 맞는 cell이 없음.
+		return;
+
+	int row, col, block, piece;
+	CellToBlockPiece(cell, row, col, block, piece);
+
+	TRACE("boxPt(x=%d, y=%d) => cell=%d  => block=%d, piece=%d\n", boxPt.x, boxPt.y, cell, block, piece);
+
+	if (SysInfo19.m_nData[block][piece] == CELL_DISABLE)
+		SysInfo19.m_nData[block][piece] = CELL_ENABLE;
+	else
+		SysInfo19.m_nData[block][piece] = CELL_DISABLE;
+
+}
+
+// nCell을  rnBlock과 rnPiece로 바꾸어서 리턴한다.
+void CACE400PieceDisableDlg::CellToBlockPiece(int nCell, int& rnRow, int&rnCol, int& rnBlock, int& rnPiece) 
+{
+	int nBlockMaxXTotal,  nBlockMaxYTotal;
+	nBlockMaxXTotal = m_nBlockCol * m_nPieceCol - SysInfo25.m_nColDel;  
+    nBlockMaxYTotal = m_nBlockRow * m_nPieceRow - SysInfo25.m_nRowDel;  
+
+	rnRow   = ((nCell - 1) / (nBlockMaxXTotal)); // 몫    
+	rnCol   = nCell - (nBlockMaxXTotal * rnRow);   // 나머지
+	rnRow   = rnRow + 1;
+	rnBlock = m_waDisCell[rnRow][rnCol][0];	
+	rnPiece = m_waDisCell[rnRow][rnCol][1];	
+
 }

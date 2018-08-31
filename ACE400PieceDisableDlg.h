@@ -31,18 +31,20 @@ public:
 // Dialog Data
 	//{{AFX_DATA(CACE400PieceDisableDlg)
 	enum { IDD = IDD_ACE400PIECEDISABLE_DIALOG };
-	int		m_nBlockTot;
-	int		m_nBlockRow;
-	int		m_nBlockCol;
-	int		m_nPieceTot;
-	int		m_nPieceRow;
-	int		m_nPieceCol;
-	int		m_nCellCol;
-	int		m_nCellRow;
-	int		m_nCellTot;
-	BOOL	m_bUsePieceDisable;
+	int		m_nBlockCol;		// block의 열(col) 갯수 
+	int		m_nBlockRow;		// block의 행(row) 갯수
+	int		m_nBlockTot;		// block의 총 갯수
+
+	int		m_nPieceCol;		// 1개 block의 sub piece 열(col) 수
+	int		m_nPieceRow;		// 1개 block의 sub piece 행(row) 수
+	int		m_nPieceTot;		// 1개 block의 sub piece 갯수
+
+	int		m_nCellCol;			// 화면에 출력되는 cell(piece)의 열 수
+	int		m_nCellRow;			// 화면에 출력되는 cell(piece)의 줄 수
+	int		m_nCellTot;			// 화면에 출력되는 cell(piece)의 총 갯수 : m_nBlockTot * m_nPieceTot
 	int		m_nCellDelCol;
 	int		m_nCellDelRow;
+	BOOL	m_bUsePieceDisable;	// Piece Disable 기능 자체 On/Off
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
@@ -63,11 +65,11 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
 	afx_msg void OnTimer(UINT nIDEvent);
-	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnButtonFileLoad();
 	afx_msg void OnButtonFileSave();
 	afx_msg void OnButtonFileView();
 	afx_msg void OnButtonEnableAll();
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
@@ -97,6 +99,8 @@ public:
 	int 	InitView();
 	int 	DisplayNo();
 	void 	GraphDisplayBlock(int nCellNo); 	
+	void 	ToggleDisable(CPoint boxPt);
+	void 	CellToBlockPiece(int nCell, int& rnRow, int&rnCol, int& rnBlock, int& rnPiece);
 	
 };
 
