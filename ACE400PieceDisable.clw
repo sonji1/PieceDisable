@@ -14,8 +14,8 @@ Class2=CAboutDlg
 Class3=CACE400PieceDisableDlg
 
 ResourceCount=3
-Resource1=IDD_PIECEDISABLE_DIALOG
-Resource2=IDD_ABOUTBOX
+Resource1=IDD_ABOUTBOX
+Resource2=IDD_PIECEDISABLE_DIALOG
 Resource3=IDD_MODE_SUB19_PIECE_DIS
 
 [CLS:CACE400PieceDisableApp]

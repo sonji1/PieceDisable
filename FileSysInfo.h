@@ -98,8 +98,8 @@ struct CSysInfo25  //SETUP piece
 
 struct CSysInfo19  //SETUP Cell(Block-Piece)
 {
-	int m_nCellRow;		// Block 갯수 		
-	int m_nCellCol;		// Piece 갯수 
+	int m_nBlockTot;		// Block 갯수 		
+	int m_nPieceTot;		// Piece 갯수 
 	int m_nCellTotal;	// Block * Piece 갯수 
 	int m_nType;		// 무조건 1
 	int m_nUse;			// 이 부분이 0이면 m_nData를 모두 0으로 초기화.

@@ -281,9 +281,9 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 		if(fp == NULL)
 		{ 
 
-			SysInfo19.m_nCellRow=SysInfo03.m_nBlock;//block
-			SysInfo19.m_nCellCol=SysInfo25.m_nBlock;//piece
-			SysInfo19.m_nCellTotal=SysInfo19.m_nCellRow*SysInfo19.m_nCellCol;
+			SysInfo19.m_nBlockTot=SysInfo03.m_nBlock;//block
+			SysInfo19.m_nPieceTot=SysInfo25.m_nBlock;//piece
+			SysInfo19.m_nCellTotal=SysInfo19.m_nBlockTot*SysInfo19.m_nPieceTot;
 			SysInfo19.m_nType=1;
 			SysInfo19.m_nUse=0;
 			//FileSysInfo01.LoadSaveSub19(1,1); //save//sylee160203
@@ -300,8 +300,8 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 			return 0;
 		}
 
-		fprintf(fp, "%10d\n",SysInfo19.m_nCellRow);
-		fprintf(fp, "%10d\n",SysInfo19.m_nCellCol); 
+		fprintf(fp, "%10d\n",SysInfo19.m_nBlockTot);
+		fprintf(fp, "%10d\n",SysInfo19.m_nPieceTot); 
         fprintf(fp, "%10d\n",SysInfo19.m_nCellTotal);
 		fprintf(fp, "%10d\n",SysInfo19.m_nType);
         fprintf(fp, "%10d\n",SysInfo19.m_nUse);
@@ -313,8 +313,8 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 				}
 			}
 		}
-		for(i=1;i<=SysInfo19.m_nCellRow;i++){
-			for(k=1;k<=SysInfo19.m_nCellCol;k++){
+		for(i=1;i<=SysInfo19.m_nBlockTot;i++){
+			for(k=1;k<=SysInfo19.m_nPieceTot;k++){
 				if(SysInfo19.m_nData[i][k]!=1){
 					SysInfo19.m_nData[i][k]=0;
 				}
@@ -334,9 +334,9 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 		fp=fopen(fName,"rt");
 		if(fp==NULL){
 
-			SysInfo19.m_nCellRow=SysInfo03.m_nBlock;//block
-			SysInfo19.m_nCellCol=SysInfo25.m_nBlock;//piece
-			SysInfo19.m_nCellTotal=SysInfo19.m_nCellRow*SysInfo19.m_nCellCol;
+			SysInfo19.m_nBlockTot=SysInfo03.m_nBlock;//block
+			SysInfo19.m_nPieceTot=SysInfo25.m_nBlock;//piece
+			SysInfo19.m_nCellTotal=SysInfo19.m_nBlockTot*SysInfo19.m_nPieceTot;
 			SysInfo19.m_nType=1;
 			SysInfo19.m_nUse=1;
 
@@ -352,10 +352,10 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 			return 0;
 		}
 
-		fscanf(fp, "%10d\n", &SysInfo19.m_nCellRow);  //block
-		fscanf(fp, "%10d\n", &SysInfo19.m_nCellCol);  //piece
+		fscanf(fp, "%10d\n", &SysInfo19.m_nBlockTot);  //block
+		fscanf(fp, "%10d\n", &SysInfo19.m_nPieceTot);  //piece
 
-		if((SysInfo19.m_nCellRow==SysInfo03.m_nBlock)&& (SysInfo19.m_nCellCol==SysInfo25.m_nBlock))
+		if((SysInfo19.m_nBlockTot==SysInfo03.m_nBlock)&& (SysInfo19.m_nPieceTot==SysInfo25.m_nBlock))
 		{ //piece  //sylee160126-5
 
 			fscanf(fp, "%10d\n", &SysInfo19.m_nCellTotal);
@@ -373,8 +373,8 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 
 			if(SysInfo19.m_nUse==1)
 			{//sylee131123
-				for(i=1;i<=SysInfo19.m_nCellRow;i++){
-					for(k=1;k<=SysInfo19.m_nCellCol;k++){
+				for(i=1;i<=SysInfo19.m_nBlockTot;i++){
+					for(k=1;k<=SysInfo19.m_nPieceTot;k++){
 						fscanf(fp, "%10d", &SysInfo19.m_nData[i][k] );		 
 
 						if(SysInfo19.m_nData[i][k]==1){//sylee131117
@@ -389,10 +389,10 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 	   else
 	   {
 
-		   SysInfo19.m_nCellRow=SysInfo03.m_nBlock;  //sylee160126-5
-		   SysInfo19.m_nCellCol=SysInfo25.m_nBlock;  //block //sylee160126-5
+		   SysInfo19.m_nBlockTot=SysInfo03.m_nBlock;  //sylee160126-5
+		   SysInfo19.m_nPieceTot=SysInfo25.m_nBlock;  //block //sylee160126-5
 
-		   SysInfo19.m_nCellTotal=SysInfo19.m_nCellRow*SysInfo19.m_nCellCol; //sylee160126-5
+		   SysInfo19.m_nCellTotal=SysInfo19.m_nBlockTot*SysInfo19.m_nPieceTot; //sylee160126-5
 		   SysInfo19.m_nType=1; //sylee160126-5
 		   SysInfo19.m_nUse=0; //sylee160126-5
 
@@ -414,10 +414,10 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 
 		if(SysInfo19.m_nUse)
 		{
-			for( i = 1 ; i <=SysInfo19.m_nCellRow ; i++) 
+			for( i = 1 ; i <=SysInfo19.m_nBlockTot ; i++) 
 			{ 
 				nCo1=0;//sylee170417-1
-				for( int  k = 1 ; k <=SysInfo19.m_nCellCol ;  k++) 
+				for( int  k = 1 ; k <=SysInfo19.m_nPieceTot ;  k++) 
 				{ 
 					if(SysInfo19.m_nData[i][k]==1){
 						nCo1++;//sylee170417-1
@@ -425,10 +425,10 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 				}
 
 			/* son 컴파일을 위해서 막음
-				if(nCo1==SysInfo19.m_nCellCol){//sylee170417-1
+				if(nCo1==SysInfo19.m_nPieceTot){//sylee170417-1
 					nBlockMaxLast1=i-1;//sylee170417-1
 				}else{
-					nBlockMaxLast1=SysInfo19.m_nCellRow;//sylee170417-1   nBlockMax
+					nBlockMaxLast1=SysInfo19.m_nBlockTot;//sylee170417-1   nBlockMax
 				} 
 			*/
 			}

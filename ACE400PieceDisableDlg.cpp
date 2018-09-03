@@ -624,10 +624,10 @@ void CACE400PieceDisableDlg::OnButtonFileSave()
 	
 	UpdateData(TRUE);		// 현재 화면 컨트롤의 데이터를 가져 온다.
 	
-	SysInfo19.m_nCellRow = m_nCellRow;
-	SysInfo19.m_nCellCol = m_nCellCol; 
+	SysInfo19.m_nBlockTot = m_nBlockTot;
+	SysInfo19.m_nPieceTot = m_nPieceTot; 
     SysInfo19.m_nCellTotal = m_nCellTot;
-//	SysInfo19.m_nType = 1;
+	SysInfo19.m_nType = 1;
     SysInfo19.m_nUse = m_bUsePieceDisable;
 	
 	
