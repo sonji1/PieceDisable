@@ -127,8 +127,13 @@ public:
 	void 	GraphDisplayBlock(int nCellNo); 	
 	int 	FindCellForPoint(CPoint boxPt, int& rnCell);
 	void 	CellToBlockPiece(int nCell, int& rnRow, int&rnCol, int& rnBlock, int& rnPiece);
+	void 	RowColToCell(int nRow, int nCol, int& rnCell);
 	void 	SetDrag(CPoint boxPt, int& rnRow, int& rnCol);
+	void 	SetDrag2(int nCell);
 	void 	ToggleDisable(CPoint boxPt);
+	void 	SetDragAllToDisable();
+	void 	SetDragAllToToggle();
+	void 	SetDragAllToEnable();
 	
 };
 

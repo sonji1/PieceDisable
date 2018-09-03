@@ -4,6 +4,8 @@
 
 #include "stdafx.h"
 #include "FileSysInfo.h"
+#include <mmsystem.h>
+
 
 
 // 글로벌 변수
@@ -13,6 +15,10 @@ CSysInfo03  	SysInfo03;
 CSysInfo25  	SysInfo25;
 CSysInfo19  	SysInfo19;
 
+
+//-------------------------
+// class CFileSysInfo 함수
+//-------------------------
 
 
 int CFileSysInfo::LoadSaveView01(int type)
@@ -438,3 +444,68 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 	fclose(fp);
 	return 1;
 }
+
+
+
+//--------------------
+// Global 함수
+//--------------------
+
+
+void DoEvents(DWORD dwMilliseconds)
+{
+	MSG msg;
+	if (::PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+		::TranslateMessage(&msg);
+		::DispatchMessage(&msg);
+	}
+	Sleep(dwMilliseconds);
+}
+
+void Delay(UINT delaytime, UINT unit)
+{
+	// 입력값 측정값 검증
+	// 1->7.5~8.5u  2->9u 4->11u 5->12 7->13u 10->17u
+	// 100->106u 200->206u 500->506u
+
+	//static LONGLONG FreqQuadPart=0;
+	static double FreqQuadPart=0;
+	static LARGE_INTEGER Freq, ZeroCnt, CurCnt;
+
+	// 고해상도 타이머의 1초당 진동수 획득
+	if(!QueryPerformanceFrequency(&Freq)) return;
+
+	switch(unit)
+	{
+	case sec:
+		FreqQuadPart = (double)Freq.QuadPart;
+		break;
+
+	case msec:
+		FreqQuadPart = (double)Freq.QuadPart/1000.0;
+		break;
+
+	default:
+	case usec:		// 1us(micro sec) 당 진동수로 변환
+		FreqQuadPart = (double)Freq.QuadPart/1000000.0;
+		break;
+	}
+	
+	//---------------------------------------------------
+	// ex) delaytime=200, unit=usec(2) 라면
+	// 	    200 micro sec 동안 DoEvents()를 반복하여 수행한다.
+
+	QueryPerformanceCounter(&ZeroCnt);	// 시작시점의 counter 값 획득
+	do
+	{
+		DoEvents();
+		QueryPerformanceCounter(&CurCnt);	// DoEvents()를 수행한 이후의 counter 값 획득
+	}
+	while((CurCnt.QuadPart-ZeroCnt.QuadPart)/FreqQuadPart < delaytime);
+
+	TRACE("			Delay(%d %s)\n", delaytime,
+						(unit == sec) ? "sec" :
+					    (unit == msec) ? "msec":  
+					    (unit == usec) ? "usec": "Logic Err?" ) ;
+}
+	

@@ -10,6 +10,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "stdafx.h"
+#include <stdarg.h>
+
 
 #define	Def_MaxPiece1	301
 #define Def_MaxBlock1 	501
@@ -19,6 +22,9 @@ enum DATA_LOAD_SAVE_TYPE  { DATA_NO_SAVE_LOAD,	// 미사용
 							DATA_SAVE, 			// 1
 							DATA_LOAD 			// 2
 };
+
+
+enum UNIT  { sec=0, msec=1, usec=2, mA, uA, Mohm, Kohm, ohm, mohm, uohm };// sec=0, msec=1, usec=2 고정
 
 class CFileSysInfo  
 {
@@ -114,5 +120,8 @@ extern CSysInfo25  		SysInfo25;
 extern CSysInfo19  		SysInfo19;
 
 
+// Global 함수
+extern	void		DoEvents(DWORD dwMilliseconds=0);
+extern  void		Delay(UINT delaytime=0, UINT unit=usec);
 
 #endif // !defined(AFX_FILESYSINFO_H__B85E18EA_5A5B_4129_A54C_D02D75AE6A24__INCLUDED_)
