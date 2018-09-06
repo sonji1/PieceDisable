@@ -163,7 +163,7 @@ BOOL CACE400PieceDisableDlg::OnInitDialog()
 	
 	// 1초 주기로 Graphic을 그리기 위한 Timer 설정
 	SetTimer ( 	0,			// OnTimer 수행시 받을 Timer Id
-				500,		// 500ms 즉, 0.5sec 주기
+				500,		// 500ms 즉, 0.5 sec 주기
 				NULL);		// Timer 수신시 자동수행할 CallBack Function은 NULL로 설정.
 				
 	
@@ -283,8 +283,11 @@ int CACE400PieceDisableDlg::InitView()
 	FileSysInfo01.LoadSaveSub19(DATA_LOAD,1);		// 기존  BlockDis.ini 를 Load (기존 data를 활용해서 새 BlockDis.ini를 만들어야)
 
  	
-	m_nDisPMaxX=545;   
-	m_nDisPMaxY=510;   
+	//m_nDisPMaxX=545;   
+	//m_nDisPMaxY=510;   
+	
+	m_nDisPMaxX=820;   	// 기존 Auto 대비 1.5배 사이즈로 확대  
+	m_nDisPMaxY=770;   
 
 	nLine1=0;   
 	nLine2=nLine1/2;  //nLine1  +시 축소 / - 100 확대 됨??????
@@ -322,6 +325,13 @@ int CACE400PieceDisableDlg::InitView()
 	
 
 	// m_saRectCell[] 정보를 생성
+	
+	ASSERT(m_nBlockTot > 0 && m_nBlockTot < Def_MaxPiece1);		// Range Check!
+	ASSERT(m_nPieceTot > 0 && m_nPieceTot < Def_MaxPiece1);		
+	ASSERT(m_nCellRow > 0 && m_nCellRow < Def_MaxPiece1);		
+	ASSERT(m_nCellCol > 0 && m_nCellCol < Def_MaxPiece1);		
+	ASSERT(m_nCellTot > 0 && m_nCellTot <= 5000);				
+
 	int k;
 	for(int i=1; i<= m_nCellRow ; i++)
 	{    
@@ -373,8 +383,11 @@ int CACE400PieceDisableDlg::DisplayNo()
 	//--------------------------------------------------
 	// block map read
 	posCol=posRow=0;
-
 	int blockRow, blockCol;
+
+	ASSERT(m_nBlockRow >0 && m_nBlockRow < Def_MaxPiece1);		// Range Check!
+	ASSERT(m_nBlockCol >0 && m_nBlockCol < Def_MaxPiece1);		// Range Check!
+
 	for(blockRow=1;   blockRow <= m_nBlockRow;  blockRow++)
 	{	
 		for(blockCol=1;   blockCol <= m_nBlockCol;  blockCol++)
@@ -384,9 +397,11 @@ int CACE400PieceDisableDlg::DisplayNo()
 	//--------------------------------------------------
 	// PIECE map read
 	posCol=posRow=0;
-
-
 	int pieceRow, pieceCol;
+
+	ASSERT(m_nPieceRow >0 && m_nPieceRow < Def_MaxPiece1);		// Range Check!
+	ASSERT(m_nPieceCol >0 && m_nPieceCol < Def_MaxPiece1);		// Range Check!
+
 	for(pieceRow=1;   pieceRow <= m_nPieceRow;  pieceRow++)
 	{	
 		for(pieceCol=1;   pieceCol<=m_nPieceCol;  pieceCol++)
@@ -455,35 +470,62 @@ void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
 	//-------------------------------
 	// 폰트 지정
 	
-     if(m_nCellCol<=2 && m_nCellRow<=2){ //sylee140115 
-        nFontW=100;nFontS=10;
-	}else if(m_nCellCol<=4 && m_nCellRow<=4){
-        nFontW=100;nFontS=20; 
-	}else if(m_nCellCol<=5 && m_nCellRow<=10){
-        nFontW=100;nFontS=30; 
-	}else if(m_nCellCol<=8 && m_nCellRow<=15){
-        nFontW=100;nFontS=40; 
-	}else if(m_nCellCol<=10 && m_nCellRow<=20){
-        nFontW=100;nFontS=50; 
-	}else if(m_nCellCol<=12 && m_nCellRow<=25){
-        nFontW=100;nFontS=60; 
-	}else if(m_nCellCol<=14 && m_nCellRow<=30){
-        nFontW=100;nFontS=70; 
-	}else if(m_nCellCol<=16 && m_nCellRow<=35){
-        nFontW=100;nFontS=80; 
-	}else if(m_nCellCol<=18 && m_nCellRow<=40){
-        nFontW=100;nFontS=130;  
-	}else if(m_nCellCol<=25 && m_nCellRow<=45){
-        nFontW=100;nFontS=140; 
-	}else if(m_nCellCol<=30 && m_nCellRow<=50){
-        nFontW=100;nFontS=150; 
-	}else{
-        nFontW=100;nFontS=160; 
+    if (m_nCellCol<=2 && m_nCellRow<=2){ 
+        nFontW=FW_THIN;			// 가늘게
+        nFontS=10;				// font size denominator이므로 값이 작을 수록 크게 출력된다.
+	}
+	else if (m_nCellCol<=4 && m_nCellRow<=4){
+        nFontW=FW_THIN;	
+        nFontS=20; 
+	}
+	else if (m_nCellCol<=5 && m_nCellRow<=10){
+        nFontW=FW_THIN;
+        nFontS=30; 
+	}
+	else if (m_nCellCol<=8 && m_nCellRow<=15){
+        nFontW=FW_THIN;
+        nFontS=40; 
+	}
+	else if (m_nCellCol<=10 && m_nCellRow<=20){
+        nFontW=FW_THIN;
+        nFontS=50; 
+	}
+	else if (m_nCellCol<=12 && m_nCellRow<=25){
+        nFontW=FW_THIN;
+        nFontS=60; 
+	}
+	else if (m_nCellCol<=14 && m_nCellRow<=30){
+        nFontW=FW_THIN;
+        nFontS=70; 
+	}
+	else if (m_nCellCol<=16 && m_nCellRow<=35){
+        nFontW=FW_THIN;
+        nFontS=80; 
+	}
+	else if (m_nCellCol<=18 && m_nCellRow<=40){
+        nFontW=FW_THIN;
+        nFontS=130;  
+	}
+	else if (m_nCellCol<=25 && m_nCellRow<=45){
+        nFontW=FW_THIN;
+        nFontS=140; 
+	}
+	else if (m_nCellCol<=30 && m_nCellRow<=50){
+        nFontW=FW_THIN;
+        nFontS=150; 
+	}
+	else{
+        nFontW=FW_THIN;
+        nFontS=160; 
 	}
 
  
 	LOGFONT lf;
-	lf.lfHeight			= MulDiv(9, pDC->GetDeviceCaps(LOGPIXELSY), nFontS);
+	lf.lfHeight			= MulDiv(9, pDC->GetDeviceCaps(LOGPIXELSY), nFontS);		
+							// 9:  기준 폰트 사이즈
+							// pDC->GetDeviceCaps(LOGPIXELSY) : 현재 PC 해상도, 지금 PC는 96으로 측정됨. numerator(곱하는 수)
+							// nFontS는 나누는 수(denominator)이므로  현재 해상도에 가까울 수록 9 포인트 폰트 사이즈가 나옴. 
+							// nFontS가 현재 해상도 보다 크면 9보다 작은 폰트, 해상도보다  작으면 9보다 큰 폰트가 됨.
 	lf.lfWidth			= 0;
 	lf.lfEscapement		= 0;
 	lf.lfOrientation	= 0; 
@@ -516,15 +558,17 @@ void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
     AllRect.bottom = m_saRectCell[nCell].bottom; 
 
 	// nCell을 block, piece로 바꾼다.
- 	int row, col, block,piece;
-	CellToBlockPiece(nCell, row, col, block, piece);		
+ 	int row, col, block, piece, ret;
+	ret = CellToRowColBlockPiece(nCell, row, col, block, piece);	// cell로 row, col, block, piece를 획득
+	if (ret < 0)	// error
+		return;
 
 
 	if (m_bDragMode == TRUE)
 	{
 		// Drag 중일때는 연한 군청색으로 표시
-		if (m_waDragData[block][piece] == TRUE)
-			bkColor = RGB(0x8f,0xbc,0x8f);	// DARK SEA GREEN
+		if (m_waDragData[row][col] == TRUE)
+			bkColor = RGB(0x8f,0xbc,0x8f);	// DARK SEA GREEN (녹두색)
 		else
 		{
 			if (SysInfo19.m_nData[block][piece] == CELL_DISABLE)
@@ -703,13 +747,13 @@ void CACE400PieceDisableDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 	CPoint	boxPt = screenPt;
 	::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
-	TRACE("Start point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
+	//TRACE("Start point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
 
 	m_bDragMode = TRUE;		// Drag가 시작되었음을 표시
 
 	// Drag 시작된 포인트의 cell을 drag로 표시,  row, col 값은 받아온다.
 	int row, col;		
-	SetDrag(boxPt, row, col);	
+	SetDrag(boxPt, row, col);	// SetDrag하면서 row, col 획득.
 	m_nStartCellRow = row;
 	m_nStartCellCol = col;
 	
@@ -726,12 +770,14 @@ void CACE400PieceDisableDlg::SetDrag(CPoint boxPt, int& rnRow, int& rnCol)
 		return;
 
 	// cell 번호에 맞는 block, piece를 찾는다.
-	int block, piece;
-	CellToBlockPiece(cell, rnRow, rnCol, block, piece);
+	int block, piece, ret;
+	ret = CellToRowColBlockPiece(cell, rnRow, rnCol, block, piece); // cell로 row, col, block, piece를 획득
+	if (ret < 0)	// error
+		return;
 
 //	TRACE("boxPt(x=%d, y=%d) => cell=%d  => block=%d, piece=%d\n", boxPt.x, boxPt.y, cell, block, piece);
 
-	m_waDragData[block][piece] = TRUE;
+	m_waDragData[rnRow][rnCol] = TRUE;
 }
 
 // 전달받은 cell을  m_waDragData[][]에 drag로 표시, 
@@ -739,10 +785,12 @@ void CACE400PieceDisableDlg::SetDrag2(int nCell)
 {
 
 	// cell 번호에 맞는 block, piece를 찾는다.
-	int row, col, block, piece;
-	CellToBlockPiece(nCell, row, col, block, piece);
+	int row, col, block, piece, ret;
+	ret = CellToRowColBlockPiece(nCell, row, col, block, piece); // cell로 row, col, block, piece를 획득
+	if (ret < 0)	// error
+		return;
 
-	m_waDragData[block][piece] = TRUE;
+	m_waDragData[row][col] = TRUE;
 }
 
 void CACE400PieceDisableDlg::OnMouseMove(UINT nFlags, CPoint point) 
@@ -760,40 +808,94 @@ void CACE400PieceDisableDlg::OnMouseMove(UINT nFlags, CPoint point)
 		CPoint	boxPt = screenPt;
 		::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
 
+		// Mouse Moving 중의 Drag 상황을 표시하기 위해 SetDrag(), SetDragRange()를 수행한다.
+		// 실제 사용할 영역은 LButtonUp()에서 마지막으로 다시 지정해야 한다.
 		int stopRow, stopCol;
-		SetDrag(boxPt, stopRow, stopCol);		// Drag 진행중인 포인트의 cell을 drag로 표시
-
-		// 마우스 클릭 시작지점과 끝지점이 같지 않은 Drag 상태라면, 현재 기준의 사각형 영역으로 Drag를 표시 
-		if (m_nStartCellRow != stopRow || m_nStartCellCol != stopCol)
-		{
-	
-			// 시작과 끝의 row, cell이 모두 다르다면, Rect 영역지정이므로 모서리 지역도 SetDrag해야 한다.
-			if (m_nStartCellRow != stopRow && m_nStartCellCol != stopCol)
-			{
-				if (m_nStartCellRow >= stopRow 			// 오른쪽에서 왼쪽 Drag는 불허용
-					|| m_nStartCellCol >= stopCol) 		// 아래에서 위로 Drag는 불허용
-					ToggleDisable(boxPt);				// 그냥 현재 점 toggle만 하고 끝낸다.
-	
-				// 왼쪽에서 오른쪽, 위에서 아래 Drag인 경우
-				else
-				{
-					// 먼저 사각형 영역 (start~stop)을 Drag로 표시하고
-					for (int row=m_nStartCellRow; row <= stopRow; row++)
-					{
-						for (int col=m_nStartCellCol; col <= stopCol; col++)
-						{	
-							int cell;
-							RowColToCell(row, col, cell);
-							SetDrag2(cell);
-	
-						}
-					}
-				}
-			}
-		}
+		SetDrag(boxPt, stopRow, stopCol);			// SetDrag하면서 stopRow, stopCol 획득.
+		SetDragRange(boxPt, stopRow, stopCol);		// start위치부터 Drag 진행중인 현재 포인트까지 영역의 cell을 drag로 표시
 	}
 	
 	CDialog::OnMouseMove(nFlags, point);
+}
+
+void CACE400PieceDisableDlg::SetDragRange(CPoint boxPt, int stopRow, int stopCol) 
+{
+	int row, col, cell, ret;
+
+
+	// 마우스 클릭 시작지점과 끝지점이 같으면 영역지정이 아니므로 중단
+	if (m_nStartCellRow == stopRow && m_nStartCellCol == stopCol)
+		return;
+
+
+	// moving 중에 잠깐 멈춘 경우.  이전에 range 설정한 포인트이므로 넘어간다.
+	if (m_nPrevRow == stopRow && m_nPrevCol == stopCol)
+	{
+		//TRACE("m_nPrevRow=StopRow=%d,  m_nPrevCol=StopCol=%d\n", stopRow, stopCol);
+		return;
+	}	
+	
+	
+	m_nPrevRow = stopRow;
+	m_nPrevCol = stopCol;
+
+	// 현재 stop 지점 기준으로 영역지정을 위해 이전 drag 시의 drag 표시는 지운다.
+	::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 녹두색표시할 부분 초기화.
+
+
+	// Rect 영역지정: 
+	// 시작과 끝의 row, cell이 모두 다르므로  모서리 지역도 SetDrag해야 한다.
+	if (m_nStartCellRow != stopRow && m_nStartCellCol != stopCol)
+	{
+		if (m_nStartCellRow >= stopRow 			// 아래에서 위로 Drag는 불허용
+			|| m_nStartCellCol >= stopCol) 		// 오른쪽에서 왼쪽 Drag는 불허용
+			return ;
+
+		// 왼쪽에서 오른쪽, 위에서 아래 Drag인 경우 사각형 영역 (start~stop)을 Drag로 표시
+		for (row=m_nStartCellRow; row <= stopRow; row++)
+		{
+			for (col=m_nStartCellCol; col <= stopCol; col++)
+			{	
+				ret = RowColToCell(row, col, cell);
+				if (ret < 0)	// error
+					continue;
+				SetDrag2(cell);
+			}
+		}
+	}
+
+	// Row 영역지정  (row는 같은데 col이 달라짐)
+	else if (m_nStartCellRow == stopRow && m_nStartCellCol != stopCol)	
+	{
+		if (m_nStartCellCol >= stopCol)	// 오른쪽에서 왼쪽 Drag는 불허용
+			return;
+
+		// stopRow는 고정, 왼쪽에서 오른쪽  cell 들을 Drag 표시 
+		for (col=m_nStartCellCol; col <= stopCol; col++)
+		{	
+			ret = RowColToCell(stopRow, col, cell);
+			if (ret < 0)	// error
+				continue;
+			SetDrag2(cell);
+		}
+	}
+		
+	// Col 영역지정  (Col은 같은데 row이 달라짐)
+	else if (m_nStartCellRow != stopRow && m_nStartCellCol == stopCol)	
+	{
+		if (m_nStartCellRow >= stopRow)	// 오른쪽에서 왼쪽 Drag는 불허용
+			return;
+
+		// stopCol은 고정, 위에서 아래의 cell 들을 Drag 표시
+		for (row=m_nStartCellRow; row <= stopRow; row++)
+		{	
+			ret = RowColToCell(row, stopCol, cell);
+			if (ret < 0)	// error
+				continue;
+			SetDrag2(cell);
+		}
+	}
+
 }
 
 void CACE400PieceDisableDlg::OnLButtonUp(UINT nFlags, CPoint point) 
@@ -807,10 +909,11 @@ void CACE400PieceDisableDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
 	CPoint	boxPt = screenPt;
 	::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
-	TRACE("End point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
+	//TRACE("End point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
 
 	int stopRow, stopCol;
-	SetDrag(boxPt, stopRow, stopCol);		// Drag가 끝난 포인트의 cell을 drag로 표시
+	SetDrag(boxPt, stopRow, stopCol);			// Drag가 끝난 포인트의 cell을 drag로 표시, stopRow, stopCol획득
+	SetDragRange(boxPt, stopRow, stopCol);		// start위치부터 Drag 진행중인 현재 포인트까지 영역의 cell을 drag로 표시
 
 	// 마우스 클릭 시작지점과 끝지점이 같으면 Drag가 아니므로 현상태를 Toggle한다.
 	if (m_nStartCellRow == stopRow && m_nStartCellCol == stopCol)
@@ -829,16 +932,26 @@ void CACE400PieceDisableDlg::OnLButtonUp(UINT nFlags, CPoint point)
 	CDialog::OnLButtonUp(nFlags, point);
 }
 
+
 void CACE400PieceDisableDlg::SetDragAllToToggle() 
 {
 
-	for (int block = 0; block <= m_nBlockTot; block++)
+	for (int row = 0; row <= m_nCellRow; row++)
 	{
-		for (int piece = 0; piece <= m_nPieceTot; piece++)
+		for (int col = 0; col <= m_nCellCol; col++)
 		{
 			// DRAG = TRUE인 cell 만 찾아서 상태를 변경한다.
-			if (m_waDragData[block][piece] == TRUE)
+			if (m_waDragData[row][col] == TRUE)
 			{
+				int cell, block, piece, tempRow, tempCol, ret;
+				ret = RowColToCell(row, col, cell);	// row, coll로 cell 획득.
+				if (ret < 0)	// error
+					continue;
+
+				ret = CellToRowColBlockPiece(cell, tempRow, tempCol, block, piece); // cell로 block, piece를 획득
+				if (ret < 0)	// error
+					continue;
+
 				// Mode : Toggle
 				if (SysInfo19.m_nData[block][piece] == CELL_DISABLE)
 					SysInfo19.m_nData[block][piece] = CELL_ENABLE;		// 기존값이 Disable이면 Enable로
@@ -849,16 +962,27 @@ void CACE400PieceDisableDlg::SetDragAllToToggle()
 
 	}
 }
+
+
 void CACE400PieceDisableDlg::SetDragAllToDisable() 
 {
 
-	for (int block = 0; block <= m_nBlockTot; block++)
+	for (int row = 0; row <= m_nCellRow; row++)
 	{
-		for (int piece = 0; piece <= m_nPieceTot; piece++)
+		for (int col = 0; col <= m_nCellCol; col++)
 		{
 			// DRAG = TRUE인 cell 만 찾아서 상태를 변경한다.
-			if (m_waDragData[block][piece] == TRUE)
+			if (m_waDragData[row][col] == TRUE)
 			{
+				int cell, block, piece, tempRow, tempCol, ret;
+				ret = RowColToCell(row, col, cell);	// row, coll로 cell 획득.
+				if (ret < 0)	// error
+					continue;
+
+				ret = CellToRowColBlockPiece(cell, tempRow, tempCol, block, piece); // cell로 block, piece를 획득
+				if (ret < 0)	// error
+					continue;
+
 				// Mode : Disable
 				SysInfo19.m_nData[block][piece] = CELL_DISABLE;		// 무조건 Disable
 			}	
@@ -869,13 +993,23 @@ void CACE400PieceDisableDlg::SetDragAllToDisable()
 void CACE400PieceDisableDlg::SetDragAllToEnable() 
 {
 
-	for (int block = 0; block <= m_nBlockTot; block++)
+	for (int row = 0; row <= m_nCellRow; row++)
 	{
-		for (int piece = 0; piece <= m_nPieceTot; piece++)
+		for (int col = 0; col <= m_nCellCol; col++)
 		{
 			// DRAG = TRUE인 cell 만 찾아서 상태를 변경한다.
-			if (m_waDragData[block][piece] == TRUE)
+			if (m_waDragData[row][col] == TRUE)
 			{
+				int cell, block, piece, tempRow, tempCol, ret;
+				
+				ret = RowColToCell(row, col, cell);	// row, coll로 cell 획득.
+				if (ret < 0)	// error
+					continue;
+
+				ret = CellToRowColBlockPiece(cell, tempRow, tempCol, block, piece); // cell로 block, piece를 획득
+				if (ret < 0)	// error
+					continue;
+
 				// Mode : Enable
 				SysInfo19.m_nData[block][piece] = CELL_ENABLE;		// 무조건 Enable
 			}	
@@ -893,10 +1027,12 @@ void CACE400PieceDisableDlg::ToggleDisable(CPoint boxPt)
 		return;
 
 	// cell 번호에 맞는 block, piece를 찾는다.
-	int row, col, block, piece;
-	CellToBlockPiece(cell, row, col, block, piece);
+	int row, col, block, piece, ret;
+	ret = CellToRowColBlockPiece(cell, row, col, block, piece); // cell로 row, col, block, piece를 획득
+	if (ret < 0)	// error
+		return;
 
-	TRACE("boxPt(x=%d, y=%d) => cell=%d  => block=%d, piece=%d\n", boxPt.x, boxPt.y, cell, block, piece);
+	//TRACE("boxPt(x=%d, y=%d) => cell=%d  => block=%d, piece=%d\n", boxPt.x, boxPt.y, cell, block, piece);
 
 	// Toggle
 	if (SysInfo19.m_nData[block][piece] == CELL_DISABLE)
@@ -926,9 +1062,8 @@ int CACE400PieceDisableDlg::FindCellForPoint(CPoint boxPt, int& rnCell)
 	return 0;
 }
 
-// nCell을  rnBlock과 rnPiece로 바꾸어서 리턴한다.
-//          rnBlock, rnPiece에 맞는 rnRow, rnCol 값도 함께 리턴한다.
-void CACE400PieceDisableDlg::CellToBlockPiece(int nCell, int& rnRow, int&rnCol, int& rnBlock, int& rnPiece) 
+// nCell로 rnRow, rnCol, rnBlock, rnPiece를 획득
+int CACE400PieceDisableDlg::CellToRowColBlockPiece(int nCell, int& rnRow, int&rnCol, int& rnBlock, int& rnPiece) 
 {
 	int nBlockMaxXTotal,  nBlockMaxYTotal;
 	nBlockMaxXTotal = m_nBlockCol * m_nPieceCol - SysInfo25.m_nColDel;  
@@ -939,14 +1074,32 @@ void CACE400PieceDisableDlg::CellToBlockPiece(int nCell, int& rnRow, int&rnCol, 
 	rnCol   = nCell - (nBlockMaxXTotal * rnRow);   // 나머지
 	rnRow   = rnRow + 1;
 
+	CString strTemp;
+	if (rnRow < 1 || rnRow > m_nCellRow) 		// error check
+	{
+		strTemp.Format("CellToRowColBlockPiece(nCell=%d):  rnRow=%d Range Error! (1 <= rnRow <= %d)\n", 
+				nCell, rnRow, m_nCellRow);
+		AfxMessageBox(strTemp, MB_ICONINFORMATION);
+		return -1;
+	}
+
+	if (rnCol < 1 || rnCol > m_nCellCol) 		// error check
+	{
+		strTemp.Format("CellToRowColBlockPiece(nCell=%d):  rnCol=%d Range Error! (1 <= rnCol <= %d)\n", 
+				nCell, rnCol, m_nCellCol);
+		AfxMessageBox(strTemp, MB_ICONINFORMATION);
+		return -1;
+	}
+
 	// row, col에 맞는 block, piece를 찾아낸다.
 	rnBlock = m_waDisCell[rnRow][rnCol][0];	
 	rnPiece = m_waDisCell[rnRow][rnCol][1];	
 
+	return 0;
 }
 
 // nRow, nCol 값으로 cell값을 계산한다.
-void CACE400PieceDisableDlg::RowColToCell(int nRow, int nCol, int& rnCell) 
+int CACE400PieceDisableDlg::RowColToCell(int nRow, int nCol, int& rnCell) 
 {
 	int nBlockMaxXTotal,  nBlockMaxYTotal;
 	nBlockMaxXTotal = m_nBlockCol * m_nPieceCol - SysInfo25.m_nColDel;  
@@ -954,6 +1107,15 @@ void CACE400PieceDisableDlg::RowColToCell(int nRow, int nCol, int& rnCell)
 
 	rnCell = ((nRow-1) * nBlockMaxXTotal) + (nCol-1)  +1;
 
+	if (rnCell < 1 || rnCell > m_nCellTot) 		// error check
+	{
+		CString strTemp;
+		strTemp.Format("RowColToCell(nRow=%d, nCol=%d):  rnCell=%d Range Error! (1 <= rnCell <= %d)\n", 
+				nRow, nCol, rnCell, m_nCellTot);
+		AfxMessageBox(strTemp, MB_ICONINFORMATION);
+		return -1;
+	}
+	return 0;
 }
 
 
@@ -982,8 +1144,14 @@ void CACE400PieceDisableDlg::OnButtonBlockDisable()
 	// DoDataExchange()로 연결된 m_nDisableBlock 값을 화면에서 가져온다.
 	UpdateData(TRUE);
 
-	if (m_nDisableBlock < 1 || m_nDisableBlock > m_nBlockTot)
+	if (m_nDisableBlock < 1 || m_nDisableBlock > m_nBlockTot)		// range check
+	{
+		CString strTemp;
+		strTemp.Format("OnButtonBlockDisable():  m_nDisableBlock=%d Range Error! (1 <= m_nDisableBlock <= %d)\n", 
+				m_nDisableBlock, m_nBlockTot);
+		AfxMessageBox(strTemp, MB_ICONINFORMATION);
 		return;
+	}
 	
 	for (int piece = 0; piece <= m_nPieceTot; piece++)
 		SysInfo19.m_nData[m_nDisableBlock][piece] = CELL_DISABLE;

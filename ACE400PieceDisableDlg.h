@@ -111,12 +111,13 @@ public:
 
 
 
-			// Drag시에 화면에서 회색표시할 부분,  m_waDisCell와 같은 구조 유지해야.
-	short 	m_waDragData[301][Def_MaxPiece1]; // Drag Data : 0: Drag False,  1: Drag True
-	bool	m_bDragMode;
-	int		m_nStartCellRow;
+			// Drag시에 화면에서 회색표시할 부분,  m_waDisCell과 같은 화면 구조에 Drag여부만 표시한다.
+	short 	m_waDragData[Def_MaxPiece1][Def_MaxPiece1]; // [CellRow][CellCol]  Drag Data  0: Drag False,  1: Drag True
+	bool	m_bDragMode;		// LButtonDown시에 Drag 시작을 표시.   TRUE: Drag On,  FALSE: Drag Off
+	int		m_nStartCellRow;	// LButtonDown시에 Mouse 시작지점을 저장. (row, col)
 	int		m_nStartCellCol;
-
+	int		m_nPrevRow; 		// Mouse Move 시에 영역설정을 너무 많이 하지 않도록 체크 (row, col)
+	int 	m_nPrevCol;			
 
 
 
@@ -126,10 +127,11 @@ public:
 	int 	DisplayNo();
 	void 	GraphDisplayBlock(int nCellNo); 	
 	int 	FindCellForPoint(CPoint boxPt, int& rnCell);
-	void 	CellToBlockPiece(int nCell, int& rnRow, int&rnCol, int& rnBlock, int& rnPiece);
-	void 	RowColToCell(int nRow, int nCol, int& rnCell);
+	int 	CellToRowColBlockPiece(int nCell, int& rnRow, int&rnCol, int& rnBlock, int& rnPiece);
+	int 	RowColToCell(int nRow, int nCol, int& rnCell);
 	void 	SetDrag(CPoint boxPt, int& rnRow, int& rnCol);
 	void 	SetDrag2(int nCell);
+	void 	SetDragRange(CPoint boxPt, int stopRow, int stopCol);
 	void 	ToggleDisable(CPoint boxPt);
 	void 	SetDragAllToDisable();
 	void 	SetDragAllToToggle();
