@@ -165,6 +165,7 @@ BOOL CACE400PieceDisableDlg::OnInitDialog()
 	SetTimer ( 	0,			// OnTimer 수행시 받을 Timer Id
 				500,		// 500ms 즉, 0.5 sec 주기
 				NULL);		// Timer 수신시 자동수행할 CallBack Function은 NULL로 설정.
+
 				
 	
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -178,13 +179,16 @@ void CACE400PieceDisableDlg::OnTimer(UINT nIDEvent)
 	// TODO: Add your message handler code here and/or call default
 	if (nIDEvent == 0)
 	{
-		//KillTimer(0);		// 1회성으로 쓰기 위해  Timer 받자 마자 해당 Timer Id를 반환한다.
 
 		for(int cell = 1; cell <= m_nCellTot; cell++) //test  display
 		{  
 			GraphDisplayBlock(cell); //display-no1			 
 		}
 	
+		if (m_bDragMode != TRUE)
+			KillTimer(0);		// 1회성으로 쓰기 위해  Timer 받고 해당 Timer Id를 반환한다.
+								// 1회성으로 쓰지 않으면 화면이 500ms sec 주기로 계속 깜박이게 된다.
+								// Drag 하는 도중에만 실시간으로 화면이 변경되도록 깜박임을 허용함.
 	}	
 	
 	CDialog::OnTimer(nIDEvent);
@@ -696,6 +700,7 @@ void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
 	ReleaseDC(pDC);
  
 	UpdateData(FALSE);
+
 }
 
 
@@ -704,6 +709,7 @@ void CACE400PieceDisableDlg::OnButtonFileLoad()
 	// TODO: Add your control notification handler code here
 	InitView();
 	
+	SetTimer (0, 200, NULL);	// load로 cell disable 상태를 그리기 위해 timer  구동
 }
 
 void CACE400PieceDisableDlg::OnButtonFileSave() 
@@ -747,6 +753,8 @@ void CACE400PieceDisableDlg::OnButtonEnableAll()
 	}
 
 	m_nDisableBlock = 0;	// 다음 설정을 위해 0으로 초기화.
+
+	SetTimer (0, 200, NULL);	// 모두 Enable한 cell을 그리기 위해 timer  구동
 	UpdateData(FALSE);
 }
 
@@ -802,6 +810,7 @@ void CACE400PieceDisableDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	m_nStartCellRow = row;
 	m_nStartCellCol = col;
 	
+	SetTimer (0, 200, NULL);	// Drag 중의 블록을 그리기 위해 timer 시작
 	
 	CDialog::OnLButtonDown(nFlags, point);
 }
@@ -1200,6 +1209,8 @@ void CACE400PieceDisableDlg::OnButtonBlockDisable()
 	
 	for (int piece = 0; piece <= m_nPieceTot; piece++)
 		SysInfo19.m_nData[m_nDisableBlock][piece] = CELL_DISABLE;
+
+	SetTimer (0, 200, NULL);	// disable로 변경된  cell을 그리기 위해 timer  구동
 
 	UpdateData(FALSE);
 
