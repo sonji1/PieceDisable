@@ -14,8 +14,8 @@
 #include <stdarg.h>
 
 
-#define	Def_MaxPiece1	301
 #define Def_MaxBlock1 	501
+#define	Def_MaxPiece1	301
 
 
 enum DATA_LOAD_SAVE_TYPE  { DATA_NO_SAVE_LOAD,	// 미사용
@@ -64,7 +64,9 @@ struct CSysInfo03  //SETUP Block
 	int m_nBlock;			// Block 갯수 : m_nRow * m_nCol
 	int m_nRow;				// Block Row 갯수
 	int m_nCol;				// Block Col 갯수 
-	int m_nData[301][301];	// Block No 배치 data
+	int m_nData[Def_MaxBlock1][Def_MaxBlock1];	
+							// Block No 배치 data  [BlockRow][BlockCol]
+							
 	int m_nType;	 		// 1: A (X, Top Left)
 							// 2: B (X, Top Right)
 							// 3: C (X, Bottom Left)
@@ -81,7 +83,8 @@ struct CSysInfo25  //SETUP piece
 	int m_nBlock;			// Piece 갯수 : m_nRow * m_nCol
 	int m_nRow;				// Piece Row 갯수
 	int m_nCol;				// Piece Col 갯수
-	int m_nData[Def_MaxPiece1][Def_MaxPiece1];	// Piece No 배치 data
+	int m_nData[Def_MaxPiece1][Def_MaxPiece1];	
+							// Piece No 배치 data  [PieceRow][PieceCol]
 							
 	int m_nType;	 		// 1: A (X, Top Left)
 							// 2: B (X, Top Right)
@@ -100,11 +103,12 @@ struct CSysInfo19  //SETUP Cell(Block-Piece)
 {
 	int m_nBlockTot;		// Block 갯수 		
 	int m_nPieceTot;		// Piece 갯수 
-	int m_nCellTotal;	// Block * Piece 갯수 
-	int m_nType;		// 무조건 1
-	int m_nUse;			// 이 부분이 0이면 m_nData를 모두 0으로 초기화.
+	int m_nCellTotal;		// Block * Piece 갯수 
+	int m_nType;			// 무조건 1
+	int m_nUse;				// 이 부분이 0이면 m_nData를 모두 0으로 초기화.
  	
-	short m_nData[301][Def_MaxPiece1]; //[BlockCount][Piececount] // Disable Data : 0: Enable,  1: Disable
+	short m_nData[Def_MaxBlock1][Def_MaxPiece1]; 
+							//[BlockCount][Piececount] // Disable Data : 0: Enable,  1: Disable
 
 	int m_nCheck;//sylee131117
 //	short m_nData1[200][200];

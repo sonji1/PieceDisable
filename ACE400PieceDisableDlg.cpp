@@ -278,15 +278,22 @@ int CACE400PieceDisableDlg::InitView()
 	int nLine1, nLine2;
 
 	FileSysInfo01.LoadSaveView01(DATA_LOAD);		// Load	SysInfoView01.m_pStrFileBDLName
-	FileSysInfo01.LoadSaveSub13(DATA_LOAD);			// Load Block.ini
-    FileSysInfo01.LoadSaveSub25(DATA_LOAD); 		// Load Piece.ini	
-	FileSysInfo01.LoadSaveSub19(DATA_LOAD,1);		// 기존  BlockDis.ini 를 Load (기존 data를 활용해서 새 BlockDis.ini를 만들어야)
+
+	if (FileSysInfo01.LoadSaveSub13(DATA_LOAD) == FALSE)		// Load Block.ini
+		return -1;
+
+    if (FileSysInfo01.LoadSaveSub25(DATA_LOAD) == FALSE) 		// Load Piece.ini	
+    	return -1;
+
+	// 기존  BlockDis.ini 를 Load (기존 data를 활용해서 새 BlockDis.ini를 만들어야)
+	if (FileSysInfo01.LoadSaveSub19(DATA_LOAD,1) == FALSE)		
+		return -1;
 
  	
 	//m_nDisPMaxX=545;   
 	//m_nDisPMaxY=510;   
 	
-	m_nDisPMaxX=820;   	// 기존 Auto 대비 1.5배 사이즈로 확대  
+	m_nDisPMaxX=820;   	// Cell Display영역.  기존 Auto 대비 1.5배 사이즈로 확대  
 	m_nDisPMaxY=770;   
 
 	nLine1=0;   
@@ -322,16 +329,53 @@ int CACE400PieceDisableDlg::InitView()
 	else
 		m_nCellYGap =1;
 		
+
+	//------------------
+	// Range Check
+	
+	//ASSERT(m_nCellTot > 0 && m_nCellTot <= 5000);				
+	//ASSERT(m_nBlockTot > 0 && m_nBlockTot < Def_MaxPiece1);		
+	//ASSERT(m_nPieceTot > 0 && m_nPieceTot < Def_MaxPiece1);		
+	//ASSERT(m_nCellRow > 0 && m_nCellRow < Def_MaxPiece1);		
+	//ASSERT(m_nCellCol > 0 && m_nCellCol < Def_MaxPiece1);		
+	
+	CString strTemp;
+	if (m_nCellTot < 1 || m_nCellTot > 5000)				
+	{
+		strTemp.Format("InitView(): m_nCellTot=%d Range Over! (1 <= m_nCellTot <= 5000)\n", m_nCellTot);
+		AfxMessageBox(strTemp, MB_ICONSTOP);
+		return FALSE;
+	}
+	if (m_nBlockTot < 1 || m_nBlockTot >= Def_MaxBlock1)
+	{
+		strTemp.Format("InitView(): m_nBlockTot=%d Range Over! (1 <= m_nBlockTot <= %d)\n", m_nBlockTot, (Def_MaxBlock1 -1));
+		AfxMessageBox(strTemp, MB_ICONSTOP);
+		return FALSE;
+	}
+	if (m_nPieceTot < 1 || m_nPieceTot >= Def_MaxPiece1)
+	{
+		strTemp.Format("InitView(): m_nPieceTot=%d Range Over! (1 <= m_nPieceTot <= %d)\n", m_nPieceTot, (Def_MaxPiece1 -1));
+		AfxMessageBox(strTemp, MB_ICONSTOP);
+		return FALSE;
+	}
+
+	if (m_nCellRow < 1 || m_nCellRow >= Def_MaxPiece1)
+	{
+		strTemp.Format("InitView(): m_nCellRow=%d Range Over! (1 <= m_nCellRow <= %d)\n", m_nCellRow, (Def_MaxPiece1 -1));
+		AfxMessageBox(strTemp, MB_ICONSTOP);
+		return FALSE;
+	}
+
+	if (m_nCellCol < 1 || m_nCellCol >= Def_MaxPiece1)
+	{
+		strTemp.Format("InitView(): m_nCellCol=%d Range Over! (1 <= m_nCellCol <= %d)\n", m_nCellCol, (Def_MaxPiece1-1));
+		AfxMessageBox(strTemp, MB_ICONSTOP);
+		return FALSE;
+	}
 	
 
+	//-------------------------------
 	// m_saRectCell[] 정보를 생성
-	
-	ASSERT(m_nBlockTot > 0 && m_nBlockTot < Def_MaxPiece1);		// Range Check!
-	ASSERT(m_nPieceTot > 0 && m_nPieceTot < Def_MaxPiece1);		
-	ASSERT(m_nCellRow > 0 && m_nCellRow < Def_MaxPiece1);		
-	ASSERT(m_nCellCol > 0 && m_nCellCol < Def_MaxPiece1);		
-	ASSERT(m_nCellTot > 0 && m_nCellTot <= 5000);				
-
 	int k;
 	for(int i=1; i<= m_nCellRow ; i++)
 	{    
@@ -357,6 +401,7 @@ int CACE400PieceDisableDlg::InitView()
 
 
 
+	//--------------------------------------
 	// 화면에 그려지는 모양 데이터를 설정
 	DisplayNo();
 
@@ -1079,7 +1124,7 @@ int CACE400PieceDisableDlg::CellToRowColBlockPiece(int nCell, int& rnRow, int&rn
 	{
 		strTemp.Format("CellToRowColBlockPiece(nCell=%d):  rnRow=%d Range Error! (1 <= rnRow <= %d)\n", 
 				nCell, rnRow, m_nCellRow);
-		AfxMessageBox(strTemp, MB_ICONINFORMATION);
+		AfxMessageBox(strTemp, MB_ICONSTOP);
 		return -1;
 	}
 
@@ -1087,7 +1132,7 @@ int CACE400PieceDisableDlg::CellToRowColBlockPiece(int nCell, int& rnRow, int&rn
 	{
 		strTemp.Format("CellToRowColBlockPiece(nCell=%d):  rnCol=%d Range Error! (1 <= rnCol <= %d)\n", 
 				nCell, rnCol, m_nCellCol);
-		AfxMessageBox(strTemp, MB_ICONINFORMATION);
+		AfxMessageBox(strTemp, MB_ICONSTOP);
 		return -1;
 	}
 
@@ -1112,7 +1157,7 @@ int CACE400PieceDisableDlg::RowColToCell(int nRow, int nCol, int& rnCell)
 		CString strTemp;
 		strTemp.Format("RowColToCell(nRow=%d, nCol=%d):  rnCell=%d Range Error! (1 <= rnCell <= %d)\n", 
 				nRow, nCol, rnCell, m_nCellTot);
-		AfxMessageBox(strTemp, MB_ICONINFORMATION);
+		AfxMessageBox(strTemp, MB_ICONSTOP);
 		return -1;
 	}
 	return 0;
@@ -1149,7 +1194,7 @@ void CACE400PieceDisableDlg::OnButtonBlockDisable()
 		CString strTemp;
 		strTemp.Format("OnButtonBlockDisable():  m_nDisableBlock=%d Range Error! (1 <= m_nDisableBlock <= %d)\n", 
 				m_nDisableBlock, m_nBlockTot);
-		AfxMessageBox(strTemp, MB_ICONINFORMATION);
+		AfxMessageBox(strTemp, MB_ICONSTOP);
 		return;
 	}
 	

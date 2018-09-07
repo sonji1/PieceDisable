@@ -83,11 +83,11 @@ int CFileSysInfo::LoadSaveView01(int type)
 int CFileSysInfo::LoadSaveSub13(int type)
 {
  
-	int  i,k;
+	int  row, col, nBlockTot;
 	
 	FILE *fp; 
 	char  fName[200];  
-	CString str; 
+	CString str, strTemp;
 
     ::ZeroMemory(&fName, sizeof(fName));
  	str.Format("%s", SysInfoView01.m_pStrFilePathBDL);//SYLEE121202
@@ -103,43 +103,72 @@ int CFileSysInfo::LoadSaveSub13(int type)
         // file 삭제 
 //		DeleteFile(fName);
 		fp = fopen(fName,"wt");
-		if(fp == NULL) return 0;
+		if(fp == NULL) return FALSE;
 
 
 		fprintf(fp, "%10d\n",SysInfo03.m_nBlock);
 		fprintf(fp, "%10d\n",SysInfo03.m_nRow);	 
 		fprintf(fp, "%10d\n",SysInfo03.m_nCol);
 		fprintf(fp, "%10d\n",SysInfo03.m_nType);
+
        
-		for(i=0;i<SysInfo03.m_nRow;i++){
-			for(k=0;k<SysInfo03.m_nCol;k++){
-			fprintf(fp, "%10d",SysInfo03.m_nData[i][k]);
-			}
+		for(row=0; row < SysInfo03.m_nRow; row++)
+		{
+			for(col=0;col<SysInfo03.m_nCol;col++)
+				fprintf(fp, "%10d",SysInfo03.m_nData[row][col]);
 			fprintf(fp,"\n");
 		}
 		break;
 
+
 	case DATA_LOAD: // 2
 		fp=fopen(fName,"rt");
-		if(fp==NULL) return 0;
+		if(fp==NULL) return FALSE;
 
-			fscanf(fp, "%10d\n", &SysInfo03.m_nBlock);		 
-			fscanf(fp, "%10d\n", &SysInfo03.m_nRow);		 
-		    fscanf(fp, "%10d\n", &SysInfo03.m_nCol);			  
-			fscanf(fp, "%10d\n", &SysInfo03.m_nType);
+		fscanf(fp, "%10d\n", &SysInfo03.m_nBlock);		 
+		fscanf(fp, "%10d\n", &SysInfo03.m_nRow);		 
+	    fscanf(fp, "%10d\n", &SysInfo03.m_nCol);			  
+		fscanf(fp, "%10d\n", &SysInfo03.m_nType);
 
-		for(i=0;i<SysInfo03.m_nRow;i++){
-			for(k=0;k<SysInfo03.m_nCol;k++){
-				fscanf(fp, "%10d", &SysInfo03.m_nData[i][k]);
-			}
+		// Range Check
+		if (SysInfo03.m_nRow <= 0 || SysInfo03.m_nRow >= Def_MaxBlock1)
+		{
+			strTemp.Format("LoadSaveSub13(): SysInfo03.m_nRow=%d Range Over! (1 <= m_nRow <= %d)\n", 
+					SysInfo03.m_nRow, (Def_MaxBlock1 -1));
+			AfxMessageBox(strTemp, MB_ICONSTOP);
+			return FALSE;
+		}
+		if (SysInfo03.m_nCol <= 0 || SysInfo03.m_nCol >= Def_MaxBlock1)
+		{
+			strTemp.Format("LoadSaveSub13(): SysInfo03.m_nCol=%d Range Over! (1 <= m_nCol <= %d)\n", 
+					SysInfo03.m_nCol, (Def_MaxBlock1 -1));
+			AfxMessageBox(strTemp, MB_ICONSTOP);
+			return FALSE;
+		}
+		nBlockTot = SysInfo03.m_nRow * SysInfo03.m_nCol;
+		if (nBlockTot <= 0 || nBlockTot >= Def_MaxBlock1)
+		{
+			strTemp.Format("LoadSaveSub13(): nBlockTot=%d Range Over! (1 <= nBlockTot <= %d)\n", 
+					nBlockTot, (Def_MaxBlock1 -1));
+			AfxMessageBox(strTemp, MB_ICONSTOP);
+			return FALSE;
+		}
+
+		for(row=0; row < SysInfo03.m_nRow; row++)
+		{
+			for(col=0; col < SysInfo03.m_nCol; col++)
+				fscanf(fp, "%10d", &SysInfo03.m_nData[row][col]);
 		} 
 		break;
+
 
 	default :
 		break;
 	}
+
+	
 	fclose(fp); 
-	return 1;
+	return TRUE;
 }
 
 
@@ -149,10 +178,10 @@ int CFileSysInfo::LoadSaveSub13(int type)
 int CFileSysInfo::LoadSaveSub25(int type)
 {
  
-	int  i,k, nTo1;;
+	int  row, col, nPieceTot;;
  	FILE *fp; 
 	char  fName[200]; 
-	CString str; 
+	CString str, strTemp; 
 
     ::ZeroMemory(&fName, sizeof(fName));
  	str.Format("%s", SysInfoView01.m_pStrFilePathBDL);//SYLEE121202
@@ -165,32 +194,37 @@ int CFileSysInfo::LoadSaveSub25(int type)
 	{
 	case DATA_SAVE: // 1
  
-		nTo1=SysInfo25.m_nRow * SysInfo25.m_nCol;
+		nPieceTot=SysInfo25.m_nRow * SysInfo25.m_nCol;
  
-		if( Def_MaxPiece1<300){//SYLEE170803
-			if(nTo1>200){//SYLEE17032
-				  AfxMessageBox("  ERROR 901,  piece  total max 200 over! ", MB_OK);			
-				  return 0;
+		if( Def_MaxPiece1 < 300)
+		{
+			if(nPieceTot > 200){
+				AfxMessageBox("  ERROR 901,  piece  total max 200 over! ", MB_ICONSTOP);			
+				return FALSE;
 			} 
-		}else{
-			if(nTo1>300){//SYLEE170803
-				  AfxMessageBox("  ERROR 901,  piece  total max 300 over! ", MB_OK);			
-				  return 0;
+		}
+		else
+		{
+			if(nPieceTot > Def_MaxPiece1) //SYLEE170803
+			{
+				AfxMessageBox("  ERROR 901,  piece  total max 300 over! ", MB_ICONSTOP);			
+				return FALSE;
 			} 
 		}
 
 		fp = fopen(fName,"wt");
-		if(fp == NULL) return 0; 
+		if(fp == NULL) 
+			return FALSE; 
 
 		fprintf(fp, "%10d\n",SysInfo25.m_nBlock);
 		fprintf(fp, "%10d\n",SysInfo25.m_nRow);	 
 		fprintf(fp, "%10d\n",SysInfo25.m_nCol);
 		fprintf(fp, "%10d\n",SysInfo25.m_nType);
        
-		for(i=0;i<SysInfo25.m_nRow;i++){
-			for(k=0;k<SysInfo25.m_nCol;k++){
-			  fprintf(fp, "%10d",SysInfo25.m_nData[i][k]);
-			}
+		for(row=0; row < SysInfo25.m_nRow; row++)
+		{
+			for(col=0; col < SysInfo25.m_nCol; col++)
+				fprintf(fp, "%10d",SysInfo25.m_nData[row][col]);
 			fprintf(fp,"\n");
 		}
 
@@ -200,51 +234,70 @@ int CFileSysInfo::LoadSaveSub25(int type)
 		break;
 
 	case DATA_LOAD: // 2
-		fp=fopen(fName,"rt");
-		if(fp==NULL) return 0;
+		fp = fopen(fName,"rt");
+		if (fp == NULL) 
+			return FALSE;
 
-			fscanf(fp, "%10d\n", &SysInfo25.m_nBlock);
-			fscanf(fp, "%10d\n", &SysInfo25.m_nRow);			 
-		    fscanf(fp, "%10d\n", &SysInfo25.m_nCol);		 
-			fscanf(fp, "%10d\n", &SysInfo25.m_nType);		 
+		fscanf(fp, "%10d\n", &SysInfo25.m_nBlock);			// nPieceTot와 같아야 함.
+		fscanf(fp, "%10d\n", &SysInfo25.m_nRow);			 
+	    fscanf(fp, "%10d\n", &SysInfo25.m_nCol);		 
+		fscanf(fp, "%10d\n", &SysInfo25.m_nType);		 
 
-		for(i=0;i<SysInfo25.m_nRow;i++){
-			for(k=0;k<SysInfo25.m_nCol;k++){
-				fscanf(fp, "%10d", &SysInfo25.m_nData[i][k]);
-			}
-		} 
+		// Range Check
+		if (SysInfo25.m_nRow <= 0 || SysInfo25.m_nRow >= Def_MaxPiece1)
+		{
+			strTemp.Format("LoadSaveSub25(): SysInfo25.m_nRow=%d Range Over! (1 <= m_nRow <= %d)\n", 
+					SysInfo25.m_nRow, (Def_MaxPiece1 -1) );
+			AfxMessageBox(strTemp, MB_ICONSTOP);
+			return FALSE;
+		}
+		if (SysInfo25.m_nCol <= 0 || SysInfo25.m_nCol >= Def_MaxPiece1)
+		{
+			strTemp.Format("LoadSaveSub25(): SysInfo25.m_nCol=%d Range Over! (1 <= m_nCol <= %d)\n", 
+					SysInfo25.m_nCol, (Def_MaxPiece1 -1) );
+			AfxMessageBox(strTemp, MB_ICONSTOP);
+			return FALSE;
+		}
 
-		    fscanf(fp, "%10d\n", &SysInfo25.m_nRowDel);			 
-		    fscanf(fp, "%10d\n", &SysInfo25.m_nColDel);
-
-
-	    nTo1=SysInfo25.m_nRow * SysInfo25.m_nCol;
- 
-	 
-	   if( Def_MaxPiece1<300){//SYLEE170803
-			if(nTo1>200){//SYLEE17032
-				  AfxMessageBox("  ERROR 901-2,  piece  total max 200 over! ", MB_OK);			
-				  SysInfo25.m_nRow=10;
-			      SysInfo25.m_nCol=10;
+	    nPieceTot=SysInfo25.m_nRow * SysInfo25.m_nCol;
+		if( Def_MaxPiece1 < 300) //SYLEE170803	// 미동작  코드.. (Def_MaxPiece1은 상수 301이므로 300보다 클 수 없음)
+		{
+			if(nPieceTot > 200) //SYLEE17032
+			{
+				strTemp.Format("LoadSaveSub25() error: nPieceTot(=%d) max 200 over!", nPieceTot);			
+				AfxMessageBox(strTemp, MB_ICONSTOP);
+				SysInfo25.m_nRow=10;
+				SysInfo25.m_nCol=10;
 			} 
-		}else{
-			if(nTo1>300){//SYLEE170803
-				  AfxMessageBox("  ERROR 901-2,  piece  total max 300 over! ", MB_OK);			
-				  SysInfo25.m_nRow=10;
-			      SysInfo25.m_nCol=10;
+		}
+		else		// 동작 코드
+		{
+			if(nPieceTot >= Def_MaxPiece1){//SYLEE170803
+				strTemp.Format("LoadSaveSub25() error: nPieceTot(=%d) max 300 over!", nPieceTot);			
+				AfxMessageBox(strTemp, MB_ICONSTOP);
+				SysInfo25.m_nRow=10;	// 
+				SysInfo25.m_nCol=10;
 			} 
 		}
 
 
+		for(row=0; row < SysInfo25.m_nRow; row++)
+		{
+			for(col=0; col < SysInfo25.m_nCol; col++)
+				fscanf(fp, "%10d", &SysInfo25.m_nData[row][col]);
+		} 
 
+		fscanf(fp, "%10d\n", &SysInfo25.m_nRowDel);			 
+		fscanf(fp, "%10d\n", &SysInfo25.m_nColDel);
 
 		break;
 
 	default :
 		break;
 	}
+
 	fclose(fp); 
-	return 1;
+	return TRUE;
 }
 
 
@@ -252,11 +305,11 @@ int CFileSysInfo::LoadSaveSub25(int type)
 int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 {
 
-	int  i,k;
+	int  block, piece;
 	
 	FILE *fp; 
 	char  fName[200]; 
- 	CString str; 
+ 	CString str, strTemp; 
 
     ::ZeroMemory(&fName, sizeof(fName));
 	//SYLEE130601	strcat( fName , "C:\\ACE300\\Setup\\BlockDis.ini" );
@@ -297,7 +350,7 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 				}
 			}
 
-			return 0;
+			return FALSE;
 		}
 
 		fprintf(fp, "%10d\n",SysInfo19.m_nBlockTot);
@@ -306,19 +359,25 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 		fprintf(fp, "%10d\n",SysInfo19.m_nType);
         fprintf(fp, "%10d\n",SysInfo19.m_nUse);
  
-		if( SysInfo19.m_nUse!=1){
-			for(i=1;i<210;i++){//sylee131122
-				for(k=1;k<210;k++){
-					SysInfo19.m_nData[i][k] =0; 
-				}
+ 		// m_nUse가 1이 아니라면 모두 0으로 초기화
+		if( SysInfo19.m_nUse!=1)
+		{
+			for(block=1; block < Def_MaxBlock1; block++) //sylee131122
+			{
+				for(piece=1; piece < Def_MaxPiece1; piece++)
+					SysInfo19.m_nData[block][piece] = 0; 
 			}
 		}
-		for(i=1;i<=SysInfo19.m_nBlockTot;i++){
-			for(k=1;k<=SysInfo19.m_nPieceTot;k++){
-				if(SysInfo19.m_nData[i][k]!=1){
-					SysInfo19.m_nData[i][k]=0;
-				}
-				fprintf(fp, "%10d",SysInfo19.m_nData[i][k]);
+
+		// SysInfo19.m_nData를 BlockDis.ini 파일에 write한다.
+		for(block=1; block<=SysInfo19.m_nBlockTot; block++)
+		{
+			for(piece=1; piece<=SysInfo19.m_nPieceTot; piece++)
+			{
+				if(SysInfo19.m_nData[block][piece] != 1)
+					SysInfo19.m_nData[block][piece] = 0;
+
+				fprintf(fp, "%10d",SysInfo19.m_nData[block][piece]);
 			}
 			fprintf(fp,"\n");
 		}
@@ -349,12 +408,35 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 			}
 
 				str.Format( "   Error No 2218, \n\n       FILE Loading Error !!!   \n\n     %s \n ",fName ); 
-			return 0;
+			return FALSE;
 		}
 
+		//-----------------------------------------------------
+		// BlockDis.ini에서 block 갯수, piece갯수를 read 
+		
 		fscanf(fp, "%10d\n", &SysInfo19.m_nBlockTot);  //block
 		fscanf(fp, "%10d\n", &SysInfo19.m_nPieceTot);  //piece
 
+		// Range Check
+		if (SysInfo19.m_nBlockTot <= 0 || SysInfo19.m_nBlockTot >= Def_MaxBlock1)
+		{
+			strTemp.Format("LoadSaveSub19(): SysInfo19.m_nBlockTot=%d Range Over! (1 <= m_nRow <= %d)\n", 
+					SysInfo19.m_nBlockTot, (Def_MaxBlock1 -1) );
+			AfxMessageBox(strTemp, MB_ICONSTOP);
+			return FALSE;
+		}
+		if (SysInfo19.m_nPieceTot <= 0 || SysInfo19.m_nPieceTot >= Def_MaxPiece1)
+		{
+			strTemp.Format("LoadSaveSub19(): SysInfo19.m_nPieceTot=%d Range Over! (1 <= m_nCol <= %d)\n", 
+					SysInfo19.m_nPieceTot, (Def_MaxPiece1 -1) );
+			AfxMessageBox(strTemp, MB_ICONSTOP);
+			return FALSE;
+		}
+
+
+		//-------------------------------------
+		// BlockDis.ini 파일 나머지 모두 read  
+		
 		if((SysInfo19.m_nBlockTot==SysInfo03.m_nBlock)&& (SysInfo19.m_nPieceTot==SysInfo25.m_nBlock))
 		{ //piece  //sylee160126-5
 
@@ -365,30 +447,35 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 			SysInfo19.m_nCheck=0;//sylee131117
 
 
-			for(i=1;i<301;i++){//sylee131122
-				for(k=1;k<201;k++){
-					SysInfo19.m_nData[i][k] =0; 
-				}
+			// 먼저 0으로 초기화.
+			for(block=1; block < Def_MaxBlock1; block++){
+				for(piece=1; piece < Def_MaxPiece1; piece++)
+					SysInfo19.m_nData[block][piece] =0; 
 			}
 
-			if(SysInfo19.m_nUse==1)
-			{//sylee131123
-				for(i=1;i<=SysInfo19.m_nBlockTot;i++){
-					for(k=1;k<=SysInfo19.m_nPieceTot;k++){
-						fscanf(fp, "%10d", &SysInfo19.m_nData[i][k] );		 
+			if(SysInfo19.m_nUse == 1) //sylee131123
+			{
+				for(block=1; block <= SysInfo19.m_nBlockTot; block++)
+				{
+					for(piece=1; piece <= SysInfo19.m_nPieceTot; piece++)
+					{
+						fscanf(fp, "%10d", &SysInfo19.m_nData[block][piece]);		 
 
-						if(SysInfo19.m_nData[i][k]==1){//sylee131117
+						if(SysInfo19.m_nData[block][piece]==1)
 							SysInfo19.m_nCheck=1;//sylee131117
-						}
 
 					}
 				} 
 			}
-
 	   }
 	   else
 	   {
 
+		   strTemp.Format("LoadSaveSub19():  Logic Error! \n Check (SysInfo19.m_nBlockTot(=%d) == SysInfo03.m_nBlock(=%d))? \n Check (SysInfo19.m_nPieceTot(=%d) == SysInfo25.m_nBlock(=%d)) ?\n ", 
+				   SysInfo19.m_nBlockTot, SysInfo03.m_nBlock, SysInfo19.m_nPieceTot, SysInfo25.m_nBlock);
+		   AfxMessageBox(strTemp, MB_ICONSTOP);
+
+		   // 값을 다시 할당해서 사용.
 		   SysInfo19.m_nBlockTot=SysInfo03.m_nBlock;  //sylee160126-5
 		   SysInfo19.m_nPieceTot=SysInfo25.m_nBlock;  //block //sylee160126-5
 
@@ -398,9 +485,9 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 
 		   SysInfo19.m_nCheck=0;//sylee160126-5
 
-		   for(i=1;i<301;i++){//sylee160126-5
-			   for(k=1;k<201;k++){//sylee160126-5
-				   SysInfo19.m_nData[i][k] =0; //sylee160126-5
+		   for(block=1;block<301;block++){//sylee160126-5
+			   for(piece=1;piece<201;piece++){//sylee160126-5
+				   SysInfo19.m_nData[block][piece] =0; //sylee160126-5
 			   }
 		   }			  
 
@@ -414,19 +501,19 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 
 		if(SysInfo19.m_nUse)
 		{
-			for( i = 1 ; i <=SysInfo19.m_nBlockTot ; i++) 
+			for( block = 1 ; block <=SysInfo19.m_nBlockTot ; block++) 
 			{ 
 				nCo1=0;//sylee170417-1
-				for( int  k = 1 ; k <=SysInfo19.m_nPieceTot ;  k++) 
+				for( int  piece = 1 ; piece <=SysInfo19.m_nPieceTot ;  piece++) 
 				{ 
-					if(SysInfo19.m_nData[i][k]==1){
+					if(SysInfo19.m_nData[block][piece]==1){
 						nCo1++;//sylee170417-1
 					}
 				}
 
 			/* son 컴파일을 위해서 막음
 				if(nCo1==SysInfo19.m_nPieceTot){//sylee170417-1
-					nBlockMaxLast1=i-1;//sylee170417-1
+					nBlockMaxLast1=block-1;//sylee170417-1
 				}else{
 					nBlockMaxLast1=SysInfo19.m_nBlockTot;//sylee170417-1   nBlockMax
 				} 
@@ -442,7 +529,7 @@ int CFileSysInfo::LoadSaveSub19(int type, int nFileType)
 	}
 
 	fclose(fp);
-	return 1;
+	return TRUE;
 }
 
 
