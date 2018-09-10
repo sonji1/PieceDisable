@@ -976,6 +976,7 @@ void CACE400PieceDisableDlg::OnLButtonUp(UINT nFlags, CPoint point)
 	// ButtonUp시에 DragMode가 True가 아니면  toggle도 안하도록 수정.
 	if (m_bDragMode == TRUE)
 	{
+
 		// 현재 클릭한 mouse의 포인트값을 출력, 상대좌표로 바꾼 값도 출력
 		HWND hwndBox = ::GetDlgItem(this->m_hWnd, IDC_STATIC_GRAPH);
 		CPoint	screenPt = point;
