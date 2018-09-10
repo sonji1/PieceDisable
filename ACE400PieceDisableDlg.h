@@ -19,6 +19,8 @@ enum CELL_TYPE { 	CELL_ENABLE, 		// 0
 					CELL_DISABLE  		// 1
 };
 
+#define		_OK			0
+
 /////////////////////////////////////////////////////////////////////////////
 // CACE400PieceDisableDlg dialog
 
@@ -129,8 +131,8 @@ public:
 	int 	FindCellForPoint(CPoint boxPt, int& rnCell);
 	int 	CellToRowColBlockPiece(int nCell, int& rnRow, int&rnCol, int& rnBlock, int& rnPiece);
 	int 	RowColToCell(int nRow, int nCol, int& rnCell);
-	void 	SetDrag(CPoint boxPt, int& rnRow, int& rnCol);
-	void 	SetDrag2(int nCell);
+	int 	SetDrag(CPoint boxPt, int& rnRow, int& rnCol);
+	int 	SetDrag2(int nCell);
 	void 	SetDragRange(CPoint boxPt, int stopRow, int stopCol);
 	void 	ToggleDisable(CPoint boxPt);
 	void 	SetDragAllToDisable();

@@ -6,13 +6,13 @@
 --------------------Configuration: ACE400PieceDisable - Win32 Debug--------------------
 </h3>
 <h3>Command Lines</h3>
-Creating temporary file "C:\Users\User\AppData\Local\Temp\RSP3317.tmp" with contents
+Creating temporary file "C:\Users\User\AppData\Local\Temp\RSPA1D7.tmp" with contents
 [
 /nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_AFXDLL" /D "_MBCS" /Fp"Debug/ACE400PieceDisable.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
 "C:\sonji\Bioptro\ACE400PieceDisable\ACE400PieceDisable\ACE400PieceDisableDlg.cpp"
 ]
-Creating command line "cl.exe @C:\Users\User\AppData\Local\Temp\RSP3317.tmp" 
-Creating temporary file "C:\Users\User\AppData\Local\Temp\RSP3318.tmp" with contents
+Creating command line "cl.exe @C:\Users\User\AppData\Local\Temp\RSPA1D7.tmp" 
+Creating temporary file "C:\Users\User\AppData\Local\Temp\RSPA1E7.tmp" with contents
 [
 /nologo /stack:0x3b9aca00 /subsystem:windows /incremental:yes /pdb:"Debug/ACE400PieceDisable.pdb" /debug /machine:I386 /out:"Debug/ACE400PieceDisable.exe" /pdbtype:sept 
 .\Debug\ACE400PieceDisable.obj
@@ -21,7 +21,7 @@ Creating temporary file "C:\Users\User\AppData\Local\Temp\RSP3318.tmp" with cont
 .\Debug\StdAfx.obj
 .\Debug\ACE400PieceDisable.res
 ]
-Creating command line "link.exe @C:\Users\User\AppData\Local\Temp\RSP3318.tmp"
+Creating command line "link.exe @C:\Users\User\AppData\Local\Temp\RSPA1E7.tmp"
 <h3>Output Window</h3>
 Compiling...
 ACE400PieceDisableDlg.cpp

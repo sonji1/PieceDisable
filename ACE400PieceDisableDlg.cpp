@@ -165,7 +165,6 @@ BOOL CACE400PieceDisableDlg::OnInitDialog()
 	SetTimer ( 	0,			// OnTimer 수행시 받을 Timer Id
 				500,		// 500ms 즉, 0.5 sec 주기
 				NULL);		// Timer 수신시 자동수행할 CallBack Function은 NULL로 설정.
-
 				
 	
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -185,10 +184,10 @@ void CACE400PieceDisableDlg::OnTimer(UINT nIDEvent)
 			GraphDisplayBlock(cell); //display-no1			 
 		}
 	
+		// Drag 하는 도중에만 실시간으로 화면이 변경되도록 한다. 
 		if (m_bDragMode != TRUE)
 			KillTimer(0);		// 1회성으로 쓰기 위해  Timer 받고 해당 Timer Id를 반환한다.
 								// 1회성으로 쓰지 않으면 화면이 500ms sec 주기로 계속 깜박이게 된다.
-								// Drag 하는 도중에만 실시간으로 화면이 변경되도록 깜박임을 허용함.
 	}	
 	
 	CDialog::OnTimer(nIDEvent);
@@ -297,8 +296,8 @@ int CACE400PieceDisableDlg::InitView()
 	//m_nDisPMaxX=545;   
 	//m_nDisPMaxY=510;   
 	
-	m_nDisPMaxX=820;   	// Cell Display영역.  기존 Auto 대비 1.5배 사이즈로 확대  
-	m_nDisPMaxY=770;   
+	m_nDisPMaxX=720;   	// Cell Display영역.  기존 Auto 대비 1.5배 사이즈로 확대  
+	m_nDisPMaxY=670;   
 
 	nLine1=0;   
 	nLine2=nLine1/2;  //nLine1  +시 축소 / - 100 확대 됨??????
@@ -700,7 +699,6 @@ void CACE400PieceDisableDlg::GraphDisplayBlock(int nCell)
 	ReleaseDC(pDC);
  
 	UpdateData(FALSE);
-
 }
 
 
@@ -802,49 +800,56 @@ void CACE400PieceDisableDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
 	//TRACE("Start point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
 
-	m_bDragMode = TRUE;		// Drag가 시작되었음을 표시
 
 	// Drag 시작된 포인트의 cell을 drag로 표시,  row, col 값은 받아온다.
 	int row, col;		
-	SetDrag(boxPt, row, col);	// SetDrag하면서 row, col 획득.
-	m_nStartCellRow = row;
-	m_nStartCellCol = col;
-	
-	SetTimer (0, 200, NULL);	// Drag 중의 블록을 그리기 위해 timer 시작
+	if (SetDrag(boxPt, row, col) == _OK)	// SetDrag하면서 row, col 획득. row, col이 정상이어야 Drag를 시작
+	{
+		m_bDragMode = TRUE;		// Drag가 시작되었음을 표시
+
+		m_nStartCellRow = row;
+		m_nStartCellCol = col;
+		
+		SetTimer (0, 300, NULL);	// Drag 중의 블록을 그리기 위해 timer 시작
+	}
 	
 	CDialog::OnLButtonDown(nFlags, point);
 }
 
 // 전달받은 포인트의 cell을 m_waDragData[][]에 drag로 표시,  row, col 값은 리턴한다.
-void CACE400PieceDisableDlg::SetDrag(CPoint boxPt, int& rnRow, int& rnCol) 
+int CACE400PieceDisableDlg::SetDrag(CPoint boxPt, int& rnRow, int& rnCol) 
 {
 	// boxPt에 맞는 cell을 찾는다.
 	int cell;
-	if (FindCellForPoint(boxPt, cell)  == -1)		// 맞는 cell이 없음.
-		return;
+	if (FindCellForPoint(boxPt, cell)  < 0)		// 맞는 cell이 없음.
+		return -1;
 
 	// cell 번호에 맞는 block, piece를 찾는다.
 	int block, piece, ret;
 	ret = CellToRowColBlockPiece(cell, rnRow, rnCol, block, piece); // cell로 row, col, block, piece를 획득
 	if (ret < 0)	// error
-		return;
+		return -1;
 
 //	TRACE("boxPt(x=%d, y=%d) => cell=%d  => block=%d, piece=%d\n", boxPt.x, boxPt.y, cell, block, piece);
 
 	m_waDragData[rnRow][rnCol] = TRUE;
+
+	return _OK;	// return 0
 }
 
 // 전달받은 cell을  m_waDragData[][]에 drag로 표시, 
-void CACE400PieceDisableDlg::SetDrag2(int nCell) 
+int CACE400PieceDisableDlg::SetDrag2(int nCell) 
 {
 
 	// cell 번호에 맞는 block, piece를 찾는다.
 	int row, col, block, piece, ret;
 	ret = CellToRowColBlockPiece(nCell, row, col, block, piece); // cell로 row, col, block, piece를 획득
 	if (ret < 0)	// error
-		return;
+		return -1;
 
 	m_waDragData[row][col] = TRUE;
+
+	return _OK;	// return 0
 }
 
 void CACE400PieceDisableDlg::OnMouseMove(UINT nFlags, CPoint point) 
@@ -865,8 +870,8 @@ void CACE400PieceDisableDlg::OnMouseMove(UINT nFlags, CPoint point)
 		// Mouse Moving 중의 Drag 상황을 표시하기 위해 SetDrag(), SetDragRange()를 수행한다.
 		// 실제 사용할 영역은 LButtonUp()에서 마지막으로 다시 지정해야 한다.
 		int stopRow, stopCol;
-		SetDrag(boxPt, stopRow, stopCol);			// SetDrag하면서 stopRow, stopCol 획득.
-		SetDragRange(boxPt, stopRow, stopCol);		// start위치부터 Drag 진행중인 현재 포인트까지 영역의 cell을 drag로 표시
+		if (SetDrag(boxPt, stopRow, stopCol) == _OK)	// SetDrag하면서 stopRow, stopCol 획득.
+			SetDragRange(boxPt, stopRow, stopCol);		// start위치부터 Drag 진행중인 현재 포인트까지 영역의 cell을 drag로 표시
 	}
 	
 	CDialog::OnMouseMove(nFlags, point);
@@ -876,6 +881,9 @@ void CACE400PieceDisableDlg::SetDragRange(CPoint boxPt, int stopRow, int stopCol
 {
 	int row, col, cell, ret;
 
+	// Start 지점에 이상이 있다면 Drag를 중단.
+	if (m_nStartCellRow < 1 || m_nStartCellCol < 1)
+		return;
 
 	// 마우스 클릭 시작지점과 끝지점이 같으면 영역지정이 아니므로 중단
 	if (m_nStartCellRow == stopRow && m_nStartCellCol == stopCol)
@@ -894,7 +902,7 @@ void CACE400PieceDisableDlg::SetDragRange(CPoint boxPt, int stopRow, int stopCol
 	m_nPrevCol = stopCol;
 
 	// 현재 stop 지점 기준으로 영역지정을 위해 이전 drag 시의 drag 표시는 지운다.
-	::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 녹두색표시할 부분 초기화.
+	::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 녹두색 표시할 부분 초기화.
 
 
 	// Rect 영역지정: 
@@ -965,28 +973,32 @@ void CACE400PieceDisableDlg::OnLButtonUp(UINT nFlags, CPoint point)
 	::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
 	//TRACE("End point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
 
+	// Drag가 끝난 포인트의 cell을 drag로 표시, stopRow, stopCol획득
 	int stopRow, stopCol;
-	SetDrag(boxPt, stopRow, stopCol);			// Drag가 끝난 포인트의 cell을 drag로 표시, stopRow, stopCol획득
-	SetDragRange(boxPt, stopRow, stopCol);		// start위치부터 Drag 진행중인 현재 포인트까지 영역의 cell을 drag로 표시
+	if (SetDrag(boxPt, stopRow, stopCol) == _OK)	// stopRow, stopCol이 정상이어야 Drag 처리 진행
+	{
+		SetDragRange(boxPt, stopRow, stopCol);		// start위치부터 Drag 진행중인 현재 포인트까지 영역의 cell을 drag로 표시
 
-	// 마우스 클릭 시작지점과 끝지점이 같으면 Drag가 아니므로 현상태를 Toggle한다.
-	if (m_nStartCellRow == stopRow && m_nStartCellCol == stopCol)
-		ToggleDisable(boxPt);		
+		// 마우스 클릭 시작지점과 끝지점이 같으면 Drag가 아니므로 현상태를 Toggle한다.
+		if (m_nStartCellRow == stopRow && m_nStartCellCol == stopCol)
+			ToggleDisable(boxPt);		
 
-	// Drag라면, Drag 표시된 모든 cell을 찾아서 Toggle한다. 
-	else
-		SetDragAllToToggle(); 
+		// Drag라면, Drag 표시된 모든 cell을 찾아서 Toggle한다. 
+		else
+			SetDragAllToToggle(); 
 
 
-	m_bDragMode = FALSE;		// Drag 끝났음을 표시
-	m_nStartCellRow = -1;
-	m_nStartCellCol = -1;
-	::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 회색표시할 부분 초기화.
+		m_bDragMode = FALSE;		// Drag 끝났음을 표시
+		m_nStartCellRow = -1;
+		m_nStartCellCol = -1;
+		::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 회색표시할 부분 초기화.
+	}
 	
 	CDialog::OnLButtonUp(nFlags, point);
 }
 
 
+// Drag(녹두색)으로 표시된 Cell을 모두 Toglle한다. (Enable은 Disable로, Disable은 Enable로)
 void CACE400PieceDisableDlg::SetDragAllToToggle() 
 {
 
@@ -1018,6 +1030,7 @@ void CACE400PieceDisableDlg::SetDragAllToToggle()
 }
 
 
+// Drag(녹두색)으로 표시된 Cell을 Disable로 바꾼다.
 void CACE400PieceDisableDlg::SetDragAllToDisable() 
 {
 
@@ -1113,7 +1126,7 @@ int CACE400PieceDisableDlg::FindCellForPoint(CPoint boxPt, int& rnCell)
 
 	rnCell = cell;
 
-	return 0;
+	return _OK;
 }
 
 // nCell로 rnRow, rnCol, rnBlock, rnPiece를 획득
@@ -1149,7 +1162,7 @@ int CACE400PieceDisableDlg::CellToRowColBlockPiece(int nCell, int& rnRow, int&rn
 	rnBlock = m_waDisCell[rnRow][rnCol][0];	
 	rnPiece = m_waDisCell[rnRow][rnCol][1];	
 
-	return 0;
+	return _OK;	// return 0
 }
 
 // nRow, nCol 값으로 cell값을 계산한다.
@@ -1169,7 +1182,7 @@ int CACE400PieceDisableDlg::RowColToCell(int nRow, int nCol, int& rnCell)
 		AfxMessageBox(strTemp, MB_ICONSTOP);
 		return -1;
 	}
-	return 0;
+	return _OK;		// return 0
 }
 
 
