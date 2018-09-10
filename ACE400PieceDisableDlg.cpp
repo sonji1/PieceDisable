@@ -977,39 +977,39 @@ void CACE400PieceDisableDlg::OnLButtonUp(UINT nFlags, CPoint point)
 	if (m_bDragMode == TRUE)
 	{
 
-		// 현재 클릭한 mouse의 포인트값을 출력, 상대좌표로 바꾼 값도 출력
-		HWND hwndBox = ::GetDlgItem(this->m_hWnd, IDC_STATIC_GRAPH);
-		CPoint	screenPt = point;
-		::ClientToScreen(this->m_hWnd, &screenPt);	// 다이얼로그의 point를 윈도우 포인트로
+	// 현재 클릭한 mouse의 포인트값을 출력, 상대좌표로 바꾼 값도 출력
+	HWND hwndBox = ::GetDlgItem(this->m_hWnd, IDC_STATIC_GRAPH);
+	CPoint	screenPt = point;
+	::ClientToScreen(this->m_hWnd, &screenPt);	// 다이얼로그의 point를 윈도우 포인트로
 
-		CPoint	boxPt = screenPt;
-		::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
-		//TRACE("End point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
+	CPoint	boxPt = screenPt;
+	::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
+	//TRACE("End point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
 
-		// Drag가 끝난 포인트의 cell을 drag로 표시, stopRow, stopCol획득
-		int stopRow, stopCol;
-		if (SetDrag(boxPt, stopRow, stopCol) == _OK)	// stopRow, stopCol이 정상이어야 Drag 처리 진행
-		{
-			SetDragRange(boxPt, stopRow, stopCol);		// start위치부터 Drag 진행중인 현재 포인트까지 영역의 cell을 drag로 표시
+	// Drag가 끝난 포인트의 cell을 drag로 표시, stopRow, stopCol획득
+	int stopRow, stopCol;
+	if (SetDrag(boxPt, stopRow, stopCol) == _OK)	// stopRow, stopCol이 정상이어야 Drag 처리 진행
+	{
+		SetDragRange(boxPt, stopRow, stopCol);		// start위치부터 Drag 진행중인 현재 포인트까지 영역의 cell을 drag로 표시
 
-			// 마우스 클릭 시작지점과 끝지점이 같으면 Drag가 아니므로 현상태를 Toggle한다.
-			if (m_nStartCellRow == stopRow && m_nStartCellCol == stopCol)
-				ToggleDisable(boxPt);		
+		// 마우스 클릭 시작지점과 끝지점이 같으면 Drag가 아니므로 현상태를 Toggle한다.
+		if (m_nStartCellRow == stopRow && m_nStartCellCol == stopCol)
+			ToggleDisable(boxPt);		
 
-			// Drag라면, Drag 표시된 모든 cell을 찾아서 Toggle한다. 
-			else
-				SetDragAllToToggle(); 
+		// Drag라면, Drag 표시된 모든 cell을 찾아서 Toggle한다. 
+		else
+			SetDragAllToToggle(); 
 		}
 	}
 	
 
-	m_bDragMode = FALSE;		// Drag 끝났음을 표시
-	m_nStartCellRow = -1;
-	m_nStartCellCol = -1;
-	::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 회색표시할 부분 초기화.
+		m_bDragMode = FALSE;		// Drag 끝났음을 표시
+		m_nStartCellRow = -1;
+		m_nStartCellCol = -1;
+		::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 회색표시할 부분 초기화.
 
 	ReleaseCapture();
-
+	
 	CDialog::OnLButtonUp(nFlags, point);
 }
 
