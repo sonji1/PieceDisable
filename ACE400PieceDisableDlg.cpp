@@ -812,6 +812,11 @@ void CACE400PieceDisableDlg::OnLButtonDown(UINT nFlags, CPoint point)
 		
 		SetTimer (0, 300, NULL);	// Drag 중의 블록을 그리기 위해 timer 시작
 	}
+
+	SetCapture();	// 마우스 커서가 윈도우를 벗어나도 메시지를 잡아온다.
+					// 윈도우를 벗어난 후 후속메시지처리를 위해 필요함. 
+					// SetCapture()를 하면 LButtonUp시에 반드시 ReleaseCapter()를 해야 함.
+					// VisualC++ 완벽가이드 399p. 참조
 	
 	CDialog::OnLButtonDown(nFlags, point);
 }
@@ -964,36 +969,46 @@ void CACE400PieceDisableDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	// TODO: Add your message handler code here and/or call default
 	
-	// 현재 클릭한 mouse의 포인트값을 출력, 상대좌표로 바꾼 값도 출력
-	HWND hwndBox = ::GetDlgItem(this->m_hWnd, IDC_STATIC_GRAPH);
-	CPoint	screenPt = point;
-	::ClientToScreen(this->m_hWnd, &screenPt);	// 다이얼로그의 point를 윈도우 포인트로
-
-	CPoint	boxPt = screenPt;
-	::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
-	//TRACE("End point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
-
-	// Drag가 끝난 포인트의 cell을 drag로 표시, stopRow, stopCol획득
-	int stopRow, stopCol;
-	if (SetDrag(boxPt, stopRow, stopCol) == _OK)	// stopRow, stopCol이 정상이어야 Drag 처리 진행
+	
+	
+	// piece box 외의 지역에서 drag start하고, piece box 안에서 stop시에 
+	// DragMode가 False여도 toggle이 되는 문제가 발생.  
+	// ButtonUp시에 DragMode가 True가 아니면  toggle도 안하도록 수정.
+	if (m_bDragMode == TRUE)
 	{
-		SetDragRange(boxPt, stopRow, stopCol);		// start위치부터 Drag 진행중인 현재 포인트까지 영역의 cell을 drag로 표시
+		// 현재 클릭한 mouse의 포인트값을 출력, 상대좌표로 바꾼 값도 출력
+		HWND hwndBox = ::GetDlgItem(this->m_hWnd, IDC_STATIC_GRAPH);
+		CPoint	screenPt = point;
+		::ClientToScreen(this->m_hWnd, &screenPt);	// 다이얼로그의 point를 윈도우 포인트로
 
-		// 마우스 클릭 시작지점과 끝지점이 같으면 Drag가 아니므로 현상태를 Toggle한다.
-		if (m_nStartCellRow == stopRow && m_nStartCellCol == stopCol)
-			ToggleDisable(boxPt);		
+		CPoint	boxPt = screenPt;
+		::ScreenToClient(hwndBox, &boxPt);			// 윈도우포인트를 다시 Piece Disable Box 내부 포인트로
+		//TRACE("End point(x=%d, y=%d) => boxPt(x=%d, y=%d) \n", point.x,  point.y, boxPt.x, boxPt.y);
 
-		// Drag라면, Drag 표시된 모든 cell을 찾아서 Toggle한다. 
-		else
-			SetDragAllToToggle(); 
+		// Drag가 끝난 포인트의 cell을 drag로 표시, stopRow, stopCol획득
+		int stopRow, stopCol;
+		if (SetDrag(boxPt, stopRow, stopCol) == _OK)	// stopRow, stopCol이 정상이어야 Drag 처리 진행
+		{
+			SetDragRange(boxPt, stopRow, stopCol);		// start위치부터 Drag 진행중인 현재 포인트까지 영역의 cell을 drag로 표시
 
+			// 마우스 클릭 시작지점과 끝지점이 같으면 Drag가 아니므로 현상태를 Toggle한다.
+			if (m_nStartCellRow == stopRow && m_nStartCellCol == stopCol)
+				ToggleDisable(boxPt);		
 
-		m_bDragMode = FALSE;		// Drag 끝났음을 표시
-		m_nStartCellRow = -1;
-		m_nStartCellCol = -1;
-		::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 회색표시할 부분 초기화.
+			// Drag라면, Drag 표시된 모든 cell을 찾아서 Toggle한다. 
+			else
+				SetDragAllToToggle(); 
+		}
 	}
 	
+
+	m_bDragMode = FALSE;		// Drag 끝났음을 표시
+	m_nStartCellRow = -1;
+	m_nStartCellCol = -1;
+	::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 회색표시할 부분 초기화.
+
+	ReleaseCapture();
+
 	CDialog::OnLButtonUp(nFlags, point);
 }
 
