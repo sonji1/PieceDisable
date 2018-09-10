@@ -812,6 +812,11 @@ void CACE400PieceDisableDlg::OnLButtonDown(UINT nFlags, CPoint point)
 		
 		SetTimer (0, 300, NULL);	// Drag 중의 블록을 그리기 위해 timer 시작
 	}
+
+	SetCapture();	// 마우스 커서가 윈도우를 벗어나도 메시지를 잡아온다.
+					// 윈도우를 벗어난 후 후속메시지처리를 위해 필요함. 
+					// SetCapture()를 하면 LButtonUp시에 반드시 ReleaseCapter()를 해야 함.
+					// VisualC++ 완벽가이드 399p. 참조
 	
 	CDialog::OnLButtonDown(nFlags, point);
 }
@@ -987,13 +992,16 @@ void CACE400PieceDisableDlg::OnLButtonUp(UINT nFlags, CPoint point)
 		else
 			SetDragAllToToggle(); 
 
-
-		m_bDragMode = FALSE;		// Drag 끝났음을 표시
-		m_nStartCellRow = -1;
-		m_nStartCellCol = -1;
-		::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 회색표시할 부분 초기화.
 	}
 	
+
+	m_bDragMode = FALSE;		// Drag 끝났음을 표시
+	m_nStartCellRow = -1;
+	m_nStartCellCol = -1;
+	::ZeroMemory(m_waDragData,sizeof(m_waDragData));	// Drag시 회색표시할 부분 초기화.
+
+	ReleaseCapture();
+
 	CDialog::OnLButtonUp(nFlags, point);
 }
 
